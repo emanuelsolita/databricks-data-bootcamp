@@ -26,6 +26,7 @@
 # MAGIC - **Actions** are operations that trigger computation and return results. Examples include `count`, `collect`, and `saveAsTextFile`.
 
 # COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## PySpark Data Structures
 # MAGIC
@@ -35,6 +36,7 @@
 # MAGIC - **DataFrames** are distributed collections of data organized into named columns. They are conceptually equivalent to tables in a relational database or data frames in R/Python, but with richer optimizations under the hood.
 
 # COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## PySpark DataFrame Operations
 # MAGIC
@@ -51,6 +53,7 @@
 # MAGIC PySpark DataFrames can be created from a variety of data sources, including CSV, JSON, Avro, Parquet, ORC, JDBC, and more.
 
 # COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## PySpark SQL
 # MAGIC
@@ -63,6 +66,7 @@
 # MAGIC PySpark SQL is used to process structured data, such as tables in a relational database or data frames in R/Python.
 
 # COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## PySpark MLlib
 # MAGIC
@@ -78,7 +82,7 @@
 
 # MAGIC %md
 # MAGIC ## Aggregations
-# MAGIC
+
 # COMMAND ----------
 
 # Create a DataFrame
@@ -87,45 +91,67 @@ df = spark.createDataFrame(data, ["name", "age"])
 df.display()
 
 # COMMAND ----------
+
 # Group by age and count the number of people in each age group
 df.groupBy("age").count().display()
 
 # COMMAND ----------
+
 # Calculate the average age
 df.agg({"age": "avg"}).display()
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Filtering
-# MAGIC
+# MAGIC ## PySpark SQL
+
 # COMMAND ----------
+
+# Creating a Temp View for demo purposes
+df.createOrReplaceTempView("people")
+
+# COMMAND ----------
+
+# Run a SQL query on the DataFrame
+spark.sql("SELECT * FROM people").display()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Filtering
+
+# COMMAND ----------
+
 # Filter people who are older than 40
 df.filter(df["age"] > 40).display()
 
 # COMMAND ----------
-# Filter people who are older than 40 using SQL
 
-df.createOrReplaceTempView("people")
+# Filter people who are older than 40 using SQL
 spark.sql("SELECT * FROM people WHERE age > 40").display()
 
 # COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Sorting
-# MAGIC
+
 # COMMAND ----------
+
 # Sort by age in descending order
 df.sort(df["age"].desc()).display()
 
 # COMMAND ----------
+
 # Sort by age in descending order using SQL
 spark.sql("SELECT * FROM people ORDER BY age DESC").display()
 
 # COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Joining
-# MAGIC
+
 # COMMAND ----------
+
 # Create two DataFrames
 data1 = [("Alice", 34), ("Bob", 45), ("Charlie", 56)]
 df1 = spark.createDataFrame(data1, ["name", "age"])
@@ -136,9 +162,12 @@ df2 = spark.createDataFrame(data2, ["name", "profession"])
 df1.join(df2, "name").display()
 
 # COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Joining on different columns
+
 # COMMAND ----------
+
 # Create two DataFrames
 data1 = [("Alice", 34), ("Bob", 45), ("Charlie", 56)]
 df1 = spark.createDataFrame(data1, ["name", "age"])
@@ -149,54 +178,88 @@ df2 = spark.createDataFrame(data2, ["person", "profession"])
 df1.join(df2, df1["name"] == df2["person"]).display()
 
 # COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Sampling
-# MAGIC
+
 # COMMAND ----------
+
 # Sample 50% of the data
 df.sample(False, 0.5).display()
 
 # COMMAND ----------
+
 # Sample 50% of the data using SQL
 spark.sql("SELECT * FROM people TABLESAMPLE(50 PERCENT)").display()
 
 # COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Statistics
-# MAGIC
+
 # COMMAND ----------
+
 # Calculate summary statistics
 df.describe().display()
 
 # COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Writing to Delta Table
+
+# COMMAND ----------
+
+df.write.saveAsTable("<catalog>.<schema>.<table>")
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Writing to Files
+
 # COMMAND ----------
+
 # Write the DataFrame to a CSV file
+# Note that below path are pointing to DBFS (Databricks internal storage) and is not adviced to use in real life use cases.
 df.write.csv("/tmp/people.csv")
 
 # COMMAND ----------
+
 # Write the DataFrame to a Parquet file
+# Note that below path are pointing to DBFS (Databricks internal storage) and is not adviced to use in real life use cases.
 df.write.parquet("/tmp/people.parquet")
 
 # COMMAND ----------
+
 # MAGIC %md
-# MAGIC ## PySpark SQL
+# MAGIC ## Read data
 # MAGIC
-# COMMAND ----------
-# Create a DataFrame
-data = [("Alice", 34), ("Bob", 45), ("Charlie", 56)]
-df = spark.createDataFrame(data, ["name", "age"])
-df.createOrReplaceTempView("people")
 
 # COMMAND ----------
-# Run a SQL query on the DataFrame
-spark.sql("SELECT * FROM people").display()
+
+# Read batch
+spark.read.csv("/tmp/people.csv").display()
 
 # COMMAND ----------
+
+# Read stream
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType
+
+# Define the schema
+schema = StructType([
+    StructField("name", StringType(), True),
+    StructField("age", IntegerType(), True)
+])
+
+df_stream = spark.readStream.format("csv").schema(schema).load("/tmp/people.csv")
+display(df_stream)
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## User-Defined Functions (UDFs)
+
 # COMMAND ----------
+
 # Define a UDF that adds 10 to a number
 from pyspark.sql.functions import udf
 from pyspark.sql.types import IntegerType
@@ -207,3 +270,15 @@ add_10 = udf(lambda x: x + 10, IntegerType())
 df.withColumn("age_plus_10", add_10(df["age"])).display()
 
 # COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Clean up temp
+
+# COMMAND ----------
+
+dbutils.fs.ls("/tmp/")
+
+# COMMAND ----------
+
+dbutils.fs.rm("/tmp/people.parquet", True)
+dbutils.fs.rm("/tmp/people.csv", True)
