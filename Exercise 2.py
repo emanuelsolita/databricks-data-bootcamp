@@ -20,35 +20,25 @@
 
 # MAGIC %md 
 # MAGIC ## Read transaction stream and write it to silver
-# MAGIC For the transaction table no transformations are needed
+# MAGIC For the transaction table, inspect the data, make sure there are no duplicates and that the data types are ok.
+# MAGIC
+# MAGIC If not, remove duplicates, transform the data types.
+# MAGIC - Group by id 
+# MAGIC - Transformations on columns - df.withColumn()
+# MAGIC
+# MAGIC
+# MAGIC Import pyspark functions.
+# MAGIC `from pyspark.sql import functions as F`
+# MAGIC
+# MAGIC Write stream to table with output mode append and trigger once and write to silver.
+# MAGIC
+# MAGIC https://docs.databricks.com/aws/en/ingestion/cloud-object-storage/auto-loader/options 
 
 # COMMAND ----------
 
 from pyspark.sql import functions as F
 
-df_trans = (spark.readStream
-            .table("emanuel_db.bronze.iot_stream"))
 
-df_trans = df_trans.withColumn("transaction_amount", F.col("transaction_amount").cast("double"))
-
-(df_trans.writeStream 
-    .format("delta")
-    .option("checkpointLocation", f"/usr/local/checkpoint/iot_stream")
-    .option("overwriteSchema", "true") #change column name or type explicitly and allow for overwriting the schema in the output table
-    .option("skipChangeCommits", 'true')
-    .outputMode("append")
-    #.option("mergeSchema", "true") #whether to infer the schema across multiple files and to merge the schema of each file in the output table
-    .trigger(once=True) 
-    .table(f"emanuel_db.silver.iot_stream"))
-
-# COMMAND ----------
-
-dbutils.fs.rm("/usr/local/checkpoint/iot_stream", recurse=True)
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC select * from emanuel_db.silver.iot_stream
 
 # COMMAND ----------
 
@@ -64,45 +54,12 @@ dbutils.fs.rm("/usr/local/checkpoint/iot_stream", recurse=True)
 
 # COMMAND ----------
 
-from pyspark.sql import functions as F
 
-df_customers = spark.read.table("emanuel_db.bronze.customers")
-
-df_customers.display()
 
 # COMMAND ----------
 
-df_customers = df_customers.dropDuplicates(["id"])
-df_customers.display()
+
 
 # COMMAND ----------
 
-(df_customers.write
-    .format("delta")
-    .mode("overwrite")
-    .option("overwriteSchema", "false")
-    .saveAsTable("emanuel_db.silver.customers"))
 
-# COMMAND ----------
-
-df_products = spark.read.table("emanuel_db.bronze.products")
-df_products = df_products.dropDuplicates(["id"])
-df_products.display()
-
-(df_products.write
-    .format("delta")
-    .mode("overwrite")
-    .option("overwriteSchema", "false")
-    .saveAsTable("emanuel_db.silver.products"))
-
-# COMMAND ----------
-
-df_stores = spark.read.table("emanuel_db.bronze.stores")
-df_stores = df_stores.dropDuplicates(["id"])
-display(df_stores)
-
-(df_stores.write
-    .format("delta")
-    .mode("overwrite")
-    .option("overwriteSchema", "false")
-    .saveAsTable("emanuel_db.silver.stores"))

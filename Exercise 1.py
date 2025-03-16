@@ -69,36 +69,17 @@ w.external_locations.get("emhollanding").url
 
 # COMMAND ----------
 
-df_trans = (spark.readStream
-            .format("cloudFiles")
-            .option("cloudFiles.format", "json")
-            #.option("cloudFiles.inferColumnTypes", "true")
-            .option("cloudFiles.schemaLocation", "/tmp/schema")
-            .load(f"{w.external_locations.get('emhollanding').url}bootcamp/iot_stream/")
-            )
-
-(df_trans.writeStream
- .option("checkpointLocation", "/tmp/iot_stream_checkpoint")
- .option("partitionBy", "transaction_date")
- .trigger(once=True)
- .table("emanuel_db.bronze.iot_stream")
-)
-            
-
-# COMMAND ----------
-
 # MAGIC %md
-# MAGIC ## Clean up schema and checkpoint location
-
-# COMMAND ----------
-
-dbutils.fs.rm("/tmp/iot_stream_checkpoint", True)
-dbutils.fs.rm("/tmp/schema", True)
-spark.sql("DROP TABLE IF EXISTS emanuel_db.bronze.iot_stream")
-
-# COMMAND ----------
-
-df_trans.printSchema()
+# MAGIC Create a new cell and read IoT data as stream
+# MAGIC ```
+# MAGIC df_trans = spark.readStream.format("cloudFiles").option(...)...
+# MAGIC ```
+# MAGIC
+# MAGIC ```
+# MAGIC df_trans.writeStream...
+# MAGIC ```
+# MAGIC
+# MAGIC write the data to silver schema in your catalog. Specify some name.
 
 # COMMAND ----------
 
@@ -133,40 +114,12 @@ df_trans.printSchema()
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC SELECT * FROM json.`abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/`
-
-# COMMAND ----------
-
-# Reading Batch Data
-df_cus = spark.read.json(f"{w.external_locations.get('emhollanding').url}bootcamp/customers/")
-df_cus.display()
-
-# COMMAND ----------
-
-# Writing to a Table
-df_cus.write.mode("overwrite").saveAsTable("emanuel_db.bronze.customers")
-
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC COPY INTO emanuel_db.bronze.customers
-# MAGIC FROM 'abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/'
-# MAGIC FILEFORMAT = JSON
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC ## Read and Write Products
 
 # COMMAND ----------
 
-df_prod = spark.read.json(f"{w.external_locations.get('emhollanding').url}bootcamp/products/")
-df_prod.display()
 
-# COMMAND ----------
-
-df_prod.write.mode("overwrite").saveAsTable("emanuel_db.bronze.products")
 
 # COMMAND ----------
 
@@ -175,12 +128,7 @@ df_prod.write.mode("overwrite").saveAsTable("emanuel_db.bronze.products")
 
 # COMMAND ----------
 
-df_stores = spark.read.json(f"{w.external_locations.get('emhollanding').url}bootcamp/stores/")
-df_stores.display()
 
-# COMMAND ----------
-
-df_stores.write.mode("overwrite").saveAsTable("emanuel_db.bronze.stores")
 
 # COMMAND ----------
 
