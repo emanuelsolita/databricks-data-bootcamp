@@ -42,10 +42,6 @@ w.external_locations.get("emhollanding").url
 
 # COMMAND ----------
 
-
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC ### Structured Streaming and Batch loads.
 # MAGIC
@@ -58,6 +54,34 @@ w.external_locations.get("emhollanding").url
 # MAGIC We refer to tables with its three-level-space name e.g. ```emanuel_db.bronze.test_table```
 # MAGIC ![](./docs/catalog_schema.png)
 # MAGIC
+
+# COMMAND ----------
+
+df_trans = (spark.readStream
+            .format("cloudFiles")
+            .option("cloudFiles.format", "json")
+            #.option("cloudFiles.inferColumnTypes", "true")
+            .option("cloudFiles.schemaLocation", "/tmp/schema")
+            .load(f"{w.external_locations.get('emhollanding').url}bootcamp/iot_stream/")
+            )
+
+(df_trans.writeStream
+ .option("checkpointLocation", "/tmp/iot_stream_checkpoint")
+ .option("partitionBy", "transaction_date")
+ .trigger(once=True)
+ .table("emanuel_db.bronze.iot_stream")
+)
+            
+
+# COMMAND ----------
+
+dbutils.fs.rm("/tmp/iot_stream_checkpoint", True)
+dbutils.fs.rm("/tmp/schema", True)
+spark.sql("DROP TABLE IF EXISTS emanuel_db.bronze.iot_stream")
+
+# COMMAND ----------
+
+df_trans.printSchema()
 
 # COMMAND ----------
 
