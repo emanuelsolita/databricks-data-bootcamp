@@ -6,10 +6,10 @@
 
 # MAGIC %md 
 # MAGIC ## Data sources
-# MAGIC - **Transaction data** - 
-# MAGIC - **Customer data** - 
-# MAGIC - **Product data** - 
-# MAGIC - **Store data** - 
+# MAGIC - **Transaction data** - abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/iot_stream/
+# MAGIC - **Customer data** - abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/
+# MAGIC - **Product data** - abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/products/
+# MAGIC - **Store data** - abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/stores/
 
 # COMMAND ----------
 
@@ -22,6 +22,13 @@
 # MAGIC To be able to access this storage location, an external location is needed. This has been created for you and can be viewed here [External location to external storage](https://adb-8983212560648347.7.azuredatabricks.net/explore/locations/emhollanding?o=8983212560648347).
 # MAGIC
 # MAGIC To programatically get the external location url you can use the package ```databricks.sdk``` and the class ```w = WorkspaceClient()```
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Task
+# MAGIC
+# MAGIC Use PySpark or Spark SQL to ingest data from source to bronze.
 
 # COMMAND ----------
 
@@ -42,10 +49,6 @@ w.external_locations.get("emhollanding").url
 
 # COMMAND ----------
 
-
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC ### Structured Streaming and Batch loads.
 # MAGIC
@@ -58,6 +61,131 @@ w.external_locations.get("emhollanding").url
 # MAGIC We refer to tables with its three-level-space name e.g. ```emanuel_db.bronze.test_table```
 # MAGIC ![](./docs/catalog_schema.png)
 # MAGIC
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Transaction Data (IoT stream)
+
+# COMMAND ----------
+
+df_trans = (spark.readStream
+            .format("cloudFiles")
+            .option("cloudFiles.format", "json")
+            #.option("cloudFiles.inferColumnTypes", "true")
+            .option("cloudFiles.schemaLocation", "/tmp/schema")
+            .load(f"{w.external_locations.get('emhollanding').url}bootcamp/iot_stream/")
+            )
+
+(df_trans.writeStream
+ .option("checkpointLocation", "/tmp/iot_stream_checkpoint")
+ .option("partitionBy", "transaction_date")
+ .trigger(once=True)
+ .table("emanuel_db.bronze.iot_stream")
+)
+            
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Clean up schema and checkpoint location
+
+# COMMAND ----------
+
+dbutils.fs.rm("/tmp/iot_stream_checkpoint", True)
+dbutils.fs.rm("/tmp/schema", True)
+spark.sql("DROP TABLE IF EXISTS emanuel_db.bronze.iot_stream")
+
+# COMMAND ----------
+
+df_trans.printSchema()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Read and Write Customers - Batch
+# MAGIC
+# MAGIC **Read**
+# MAGIC
+# MAGIC PySpark
+# MAGIC `spark.read.json("path")`
+# MAGIC
+# MAGIC Spark SQL
+# MAGIC ```
+# MAGIC SELECT * FROM json.`abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/`
+# MAGIC ```
+# MAGIC
+# MAGIC **Write**
+# MAGIC
+# MAGIC *PySpark*
+# MAGIC `spark_df.write.saveAsTable("catalog.schema.table")`
+# MAGIC
+# MAGIC *Spark SQL*
+# MAGIC
+# MAGIC `CREATE TABLE emanuel_db.bronze.customers;`
+# MAGIC
+# MAGIC ```
+# MAGIC COPY INTO emanuel_db.bronze.customers
+# MAGIC FROM 'abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/'
+# MAGIC FILEFORMAT = JSON;
+# MAGIC ```
+# MAGIC
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC SELECT * FROM json.`abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/`
+
+# COMMAND ----------
+
+# Reading Batch Data
+df_cus = spark.read.json(f"{w.external_locations.get('emhollanding').url}bootcamp/customers/")
+df_cus.display()
+
+# COMMAND ----------
+
+# Writing to a Table
+df_cus.write.mode("overwrite").saveAsTable("emanuel_db.bronze.customers")
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC COPY INTO emanuel_db.bronze.customers
+# MAGIC FROM 'abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/'
+# MAGIC FILEFORMAT = JSON
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Read and Write Products
+
+# COMMAND ----------
+
+df_prod = spark.read.json(f"{w.external_locations.get('emhollanding').url}bootcamp/products/")
+df_prod.display()
+
+# COMMAND ----------
+
+df_prod.write.mode("overwrite").saveAsTable("emanuel_db.bronze.products")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Read and Write Stores
+
+# COMMAND ----------
+
+df_stores = spark.read.json(f"{w.external_locations.get('emhollanding').url}bootcamp/stores/")
+df_stores.display()
+
+# COMMAND ----------
+
+df_stores.write.mode("overwrite").saveAsTable("emanuel_db.bronze.stores")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Inspect your new tables in under catalogs
 
 # COMMAND ----------
 
