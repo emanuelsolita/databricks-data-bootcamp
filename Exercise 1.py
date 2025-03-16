@@ -25,6 +25,13 @@
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC ## Task
+# MAGIC
+# MAGIC Use PySpark or Spark SQL to ingest data from source to bronze.
+
+# COMMAND ----------
+
 from databricks.sdk import WorkspaceClient
 
 # COMMAND ----------
