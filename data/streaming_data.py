@@ -6,7 +6,7 @@ w = WorkspaceClient()
 
 # COMMAND ----------
 
-ext_loc_url = w.external_locations.get("emhollanding").url
+ext_loc_url = w.external_locations.get("landingneusa").url
 
 # COMMAND ----------
 
@@ -59,7 +59,7 @@ df = spark.createDataFrame(data, columns)
 
 # COMMAND ----------
 
-df.write.mode("overwrite").format("json").option("partitionBy", "transaction_date").save(f"{ext_loc_url}/bootcamp/iot_stream_2/")
+df.write.mode("overwrite").format("json").option("partitionBy", "transaction_date").save(f"{ext_loc_url}/bootcamp/iot_stream/iot_stream_2/")
 
 # COMMAND ----------
 

@@ -29,26 +29,42 @@ from pyspark.sql import functions as F
 df_trans = (spark.readStream
             .table("emanuel_db.bronze.iot_stream"))
 
-df_trans = df_trans.withColumn("transaction_amount", F.col("transaction_amount").cast("double"))
+df_trans = (df_trans
+            .withColumn("transaction_amount", F.col("transaction_amount").cast("double"))
+            .withColumn("transaction_date", F.to_date("transaction_date"))
+            .withColumn("customer_id", F.col("customer_id").cast("long"))
+            .withColumn("product_id", F.col("product_id").cast("long"))
+            .withColumn("store_id", F.col("store_id").cast("long"))
+            .withColumn("receipt_id", F.col("receipt_id").cast("long"))
+            .drop("_rescued_data")
+            )
 
 (df_trans.writeStream 
     .format("delta")
     .option("checkpointLocation", f"/usr/local/checkpoint/iot_stream")
     .option("overwriteSchema", "true") #change column name or type explicitly and allow for overwriting the schema in the output table
     .option("skipChangeCommits", 'true')
-    .outputMode("append")
+    #.outputMode("append")
     #.option("mergeSchema", "true") #whether to infer the schema across multiple files and to merge the schema of each file in the output table
     .trigger(once=True) 
     .table(f"emanuel_db.silver.iot_stream"))
 
 # COMMAND ----------
 
-dbutils.fs.rm("/usr/local/checkpoint/iot_stream", recurse=True)
+# MAGIC %md
+# MAGIC ## Clean up schema and checkpoint location
+# MAGIC
+# MAGIC Uncomment if you need to rerun
+
+# COMMAND ----------
+
+#dbutils.fs.rm("/usr/local/checkpoint/iot_stream", recurse=True)
+#spark.sql("DROP TABLE IF EXISTS emanuel_db.silver.iot_stream")
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select * from emanuel_db.silver.iot_stream
+# MAGIC select count(*) from emanuel_db.silver.iot_stream
 
 # COMMAND ----------
 
@@ -72,37 +88,40 @@ df_customers.display()
 
 # COMMAND ----------
 
-df_customers = df_customers.dropDuplicates(["id"])
-df_customers.display()
+df_customers = df_customers.dropDuplicates(["id"]).withColumn("date", F.to_date("date"))
 
 # COMMAND ----------
 
 (df_customers.write
     .format("delta")
     .mode("overwrite")
-    .option("overwriteSchema", "false")
+    .option("overwriteSchema", "true")
     .saveAsTable("emanuel_db.silver.customers"))
 
 # COMMAND ----------
 
 df_products = spark.read.table("emanuel_db.bronze.products")
-df_products = df_products.dropDuplicates(["id"])
+df_products = df_products.dropDuplicates(["id"]).withColumn("date", F.to_date("date"))
 df_products.display()
 
 (df_products.write
     .format("delta")
     .mode("overwrite")
-    .option("overwriteSchema", "false")
+    .option("overwriteSchema", "true")
     .saveAsTable("emanuel_db.silver.products"))
 
 # COMMAND ----------
 
 df_stores = spark.read.table("emanuel_db.bronze.stores")
-df_stores = df_stores.dropDuplicates(["id"])
+df_stores = df_stores.dropDuplicates(["id"]).withColumn("date", F.to_date("date"))
 display(df_stores)
 
 (df_stores.write
     .format("delta")
     .mode("overwrite")
-    .option("overwriteSchema", "false")
+    .option("overwriteSchema", "true")
     .saveAsTable("emanuel_db.silver.stores"))
+
+# COMMAND ----------
+
+

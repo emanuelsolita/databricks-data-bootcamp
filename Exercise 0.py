@@ -17,13 +17,27 @@
 # MAGIC
 
 # COMMAND ----------
+
 # MAGIC %sql
-# MAGIC CREATE CATALOG IF NOT EXISTS my_catalog;
+# MAGIC CREATE CATALOG emanuel_db;
+
 # COMMAND ----------
-# COMMAND ----------
+
 # MAGIC %sql
-# MAGIC CREATE SCHEMA IF NOT EXISTS my_catalog.my_schema;
+# MAGIC CREATE SCHEMA IF NOT EXISTS emanuel_db.bronze;
+
 # COMMAND ----------
+
+# MAGIC %sql
+# MAGIC CREATE SCHEMA IF NOT EXISTS emanuel_db.silver;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC CREATE SCHEMA IF NOT EXISTS emanuel_db.gold;
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC # Introduction to PySpark
 # MAGIC
@@ -307,3 +321,7 @@ dbutils.fs.ls("/tmp/")
 
 dbutils.fs.rm("/tmp/people.parquet", True)
 dbutils.fs.rm("/tmp/people.csv", True)
+
+# COMMAND ----------
+
+
