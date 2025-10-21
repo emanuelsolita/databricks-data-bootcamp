@@ -6,10 +6,10 @@
 
 # MAGIC %md 
 # MAGIC ## Data sources
-# MAGIC - **Transaction data** - abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/iot_stream/
-# MAGIC - **Customer data** - abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/
-# MAGIC - **Product data** - abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/products/
-# MAGIC - **Store data** - abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/stores/
+# MAGIC - **Transaction data** - abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/iot_stream/
+# MAGIC - **Customer data** - abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/
+# MAGIC - **Product data** - abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/products/
+# MAGIC - **Store data** - abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/stores/
 
 # COMMAND ----------
 
@@ -45,7 +45,7 @@ for i in w.external_locations.list():
 
 # COMMAND ----------
 
-w.external_locations.get("emhollanding").url
+w.external_locations.get("landingneusa").url
 
 # COMMAND ----------
 

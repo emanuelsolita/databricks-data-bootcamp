@@ -18,6 +18,12 @@
 
 # COMMAND ----------
 
+
+# MAGIC %sql
+# MAGIC CREATE CATALOG emanuel_db;
+
+# COMMAND ----------
+
 # MAGIC %sql
 # MAGIC CREATE CATALOG IF NOT EXISTS my_catalog;
 
@@ -25,6 +31,7 @@
 
 # MAGIC %sql
 # MAGIC CREATE SCHEMA IF NOT EXISTS my_catalog.my_schema;
+
 
 # COMMAND ----------
 
@@ -345,3 +352,7 @@ dbutils.fs.ls("/tmp/")
 
 dbutils.fs.rm("/tmp/people.parquet", True)
 dbutils.fs.rm("/tmp/people.csv", True)
+
+# COMMAND ----------
+
+
