@@ -199,3 +199,4 @@ df_stores.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(
 # COMMAND ----------
 
 
+# COMMAND ----------
