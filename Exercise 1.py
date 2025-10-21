@@ -69,42 +69,17 @@ w.external_locations.get("landingneusa").url
 
 # COMMAND ----------
 
-from pyspark.sql import functions as F 
-
-df_trans = (spark.readStream
-            .format("cloudFiles")
-            .option("cloudFiles.format", "json")
-            #.option("cloudFiles.inferColumnTypes", "true")
-            .option("cloudFiles.schemaLocation", "/tmp/schema")
-            .load(f"{w.external_locations.get('landingneusa').url}bootcamp/iot_stream/")
-            )
-
-
-df_trans = df_trans.withColumn("etl_timestamp", F.current_timestamp())
-
-
-(df_trans.writeStream
- .option("checkpointLocation", "/tmp/iot_stream_checkpoint")
- .option("partitionBy", "transaction_date")
- .trigger(once=True)
- .table("emanuel_db.bronze.iot_stream")
-)
-            
-
-# COMMAND ----------
-
 # MAGIC %md
-# MAGIC ## Clean up schema and checkpoint location
-
-# COMMAND ----------
-
-#dbutils.fs.rm("/tmp/iot_stream_checkpoint", True)
-#dbutils.fs.rm("/tmp/schema", True)
-#spark.sql("DROP TABLE IF EXISTS emanuel_db.bronze.iot_stream")
-
-# COMMAND ----------
-
-df_trans.printSchema()
+# MAGIC Create a new cell and read IoT data as stream
+# MAGIC ```
+# MAGIC df_trans = spark.readStream.format("cloudFiles").option(...)...
+# MAGIC ```
+# MAGIC
+# MAGIC ```
+# MAGIC df_trans.writeStream...
+# MAGIC ```
+# MAGIC
+# MAGIC write the data to silver schema in your catalog. Specify some name.
 
 # COMMAND ----------
 
@@ -139,42 +114,12 @@ df_trans.printSchema()
 
 # COMMAND ----------
 
-# MAGIC %sql
-# MAGIC SELECT * FROM json.`abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/`
-
-# COMMAND ----------
-
-# Reading Batch Data
-df_cus = spark.read.json(f"{w.external_locations.get('landingneusa').url}bootcamp/customers/")
-df_cus.display()
-
-# COMMAND ----------
-
-# Writing to a Table
-df_cus = df_cus.withColumn("etl_timestamp", F.current_timestamp())
-df_cus.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.customers")
-
-# COMMAND ----------
-
-#%sql
-#COPY INTO emanuel_db.bronze.customers
-#FROM 'abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/'
-#FILEFORMAT = JSON
-
-# COMMAND ----------
-
 # MAGIC %md
 # MAGIC ## Read and Write Products
 
 # COMMAND ----------
 
-df_prod = spark.read.json(f"{w.external_locations.get('landingneusa').url}bootcamp/products/")
-df_prod.display()
 
-# COMMAND ----------
-
-df_prod = df_prod.withColumn("etl_timestamp", F.current_timestamp())
-df_prod.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.products")
 
 # COMMAND ----------
 
@@ -183,13 +128,7 @@ df_prod.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("e
 
 # COMMAND ----------
 
-df_stores = spark.read.json(f"{w.external_locations.get('landingneusa').url}bootcamp/stores/")
-df_stores.display()
 
-# COMMAND ----------
-
-df_stores = df_stores.withColumn("etl_timestamp", F.current_timestamp())
-df_stores.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.stores")
 
 # COMMAND ----------
 

@@ -18,23 +18,20 @@
 
 # COMMAND ----------
 
+
 # MAGIC %sql
 # MAGIC CREATE CATALOG emanuel_db;
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE SCHEMA IF NOT EXISTS emanuel_db.bronze;
+# MAGIC CREATE CATALOG IF NOT EXISTS my_catalog;
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE SCHEMA IF NOT EXISTS emanuel_db.silver;
+# MAGIC CREATE SCHEMA IF NOT EXISTS my_catalog.my_schema;
 
-# COMMAND ----------
-
-# MAGIC %sql
-# MAGIC CREATE SCHEMA IF NOT EXISTS emanuel_db.gold;
 
 # COMMAND ----------
 
@@ -172,6 +169,17 @@ spark.sql("SELECT * FROM people WHERE age > 40").display()
 # COMMAND ----------
 
 # MAGIC %md
+# MAGIC ## Transformations
+# MAGIC
+
+# COMMAND ----------
+
+# Below transaction_amount is cast to double - for reference only
+df_trans = df_trans.withColumn("transaction_amount", F.col("transaction_amount").cast("double"))
+
+# COMMAND ----------
+
+# MAGIC %md
 # MAGIC ## Sorting
 
 # COMMAND ----------
@@ -291,6 +299,29 @@ schema = StructType([
 
 df_stream = spark.readStream.format("csv").schema(schema).load("/tmp/people.csv")
 display(df_stream)
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Write stream to delta table
+
+# COMMAND ----------
+
+# For reference only - Doesn't work
+df_trans = (spark.readStream
+            .format("cloudFiles")
+            .option("cloudFiles.format", "json")
+            #.option("cloudFiles.inferColumnTypes", "true")
+            .option("cloudFiles.schemaLocation", "/tmp/schema") # Schema location where the schema is stored
+            .load(f"{w.external_locations.get('emhollanding').url}bootcamp/iot_stream/")
+            )
+
+(df_trans.writeStream
+ .option("checkpointLocation", "/tmp/iot_stream_checkpoint") # Checkpoint location where the stream is checkpointed
+ .option("partitionBy", "transaction_date")
+ .trigger(once=True)
+ .table("catalog.bronze.iot_stream")
+)
 
 # COMMAND ----------
 
