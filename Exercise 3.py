@@ -78,6 +78,7 @@
 # COMMAND ----------
 
 # MAGIC %sql
+# MAGIC drop table emanuel_db.gold.iot_data;
 # MAGIC CREATE OR REPLACE TABLE emanuel_db.gold.iot_data (
 # MAGIC   id string primary key,
 # MAGIC   customer_id bigint,
@@ -133,4 +134,3 @@ spark.sql(query)
 # COMMAND ----------
 
 
-# COMMAND ----------

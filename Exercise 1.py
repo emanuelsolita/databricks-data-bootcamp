@@ -146,7 +146,7 @@ df_trans.printSchema()
 
 # Reading Batch Data
 df_cus = spark.read.json(f"{w.external_locations.get('landingneusa').url}bootcamp/customers/")
-df_cus.display()
+df_cus.limit(10).display()
 
 # COMMAND ----------
 
@@ -184,7 +184,7 @@ df_prod.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("e
 # COMMAND ----------
 
 df_stores = spark.read.json(f"{w.external_locations.get('landingneusa').url}bootcamp/stores/")
-df_stores.display()
+df_stores.limit(10).display()
 
 # COMMAND ----------
 
@@ -199,4 +199,3 @@ df_stores.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable(
 # COMMAND ----------
 
 
-# COMMAND ----------
