@@ -40,11 +40,6 @@ w = WorkspaceClient()
 
 # COMMAND ----------
 
-for i in w.external_locations.list():
-    print(i)
-
-# COMMAND ----------
-
 w.external_locations.get("landingneusa").url
 
 # COMMAND ----------
@@ -136,6 +131,11 @@ df_trans.printSchema()
 # MAGIC FILEFORMAT = JSON;
 # MAGIC ```
 # MAGIC
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC select * from read_files('abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/')
 
 # COMMAND ----------
 
