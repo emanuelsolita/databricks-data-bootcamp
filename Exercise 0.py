@@ -18,20 +18,35 @@
 
 # COMMAND ----------
 
+# MAGIC %md
+# MAGIC programmatic way of getting current user 
 
-# MAGIC %sql
-# MAGIC CREATE CATALOG emanuel_db;
+# COMMAND ----------
+
+current_user = spark.sql("SELECT current_user()").collect()[0][0].split(".")[0]+"_db"
+current_user
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE CATALOG IF NOT EXISTS my_catalog;
+# MAGIC select replace(split(current_user, '@')[0], '.', '_') || '_db'
+
+# COMMAND ----------
+
+# MAGIC
+# MAGIC %sql
+# MAGIC CREATE CATALOG <catalog_name>;
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE SCHEMA IF NOT EXISTS my_catalog.my_schema;
+# MAGIC CREATE CATALOG IF NOT EXISTS <catalog_name>;
 
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC CREATE SCHEMA IF NOT EXISTS <catalog_name>.<schema_name>;
+# MAGIC
 
 # COMMAND ----------
 

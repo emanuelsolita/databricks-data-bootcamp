@@ -93,7 +93,7 @@ w.external_locations.get("landingneusa").url
 # MAGIC
 # MAGIC Spark SQL
 # MAGIC ```
-# MAGIC SELECT * FROM json.`abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/`
+# MAGIC SELECT * FROM json.`abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/`
 # MAGIC ```
 # MAGIC
 # MAGIC **Write**
@@ -107,7 +107,7 @@ w.external_locations.get("landingneusa").url
 # MAGIC
 # MAGIC ```
 # MAGIC COPY INTO emanuel_db.bronze.customers
-# MAGIC FROM 'abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/'
+# MAGIC FROM 'abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/'
 # MAGIC FILEFORMAT = JSON;
 # MAGIC ```
 # MAGIC
