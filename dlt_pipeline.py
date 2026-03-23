@@ -1,11 +1,18 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Complete DLT Pipeline - Retail Analytics
+# MAGIC # DLT Pipeline Template - Retail Analytics
 # MAGIC
-# MAGIC This notebook implements a complete Delta Live Tables pipeline with:
-# MAGIC - **Bronze Schema**: Raw data ingestion from landing zone
-# MAGIC - **Silver Schema**: Data cleansing and transformations
-# MAGIC - **Gold Schema**: Dimension and fact tables for analytics
+# MAGIC This is a template for the Delta Live Tables pipeline. Follow the instructions in DLT_SETUP_GUIDE.md to complete the implementation.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Tips for Completing This Exercise
+# MAGIC
+# MAGIC 1. **Import the pipelines module**: Use `from pyspark import pipelines as dp`
+# MAGIC 2. **Define tables using decorators**: `@dp.table(name="...")`
+# MAGIC 3. **Add data quality expectations**: `@dp.expect_or_drop("name", "condition")`
+# MAGIC 4. **Read from other DLT tables**: `dp.read("table_name")` or `dp.read_stream("table_name")`
 
 # COMMAND ----------
 
@@ -17,297 +24,201 @@ from pyspark.sql import functions as F
 # MAGIC %md
 # MAGIC ## BRONZE SCHEMA - Data Ingestion
 # MAGIC
-# MAGIC Ingests raw data from the landing zone with data quality expectations.
+# MAGIC TODO: Define tables for:
+# MAGIC - iot_stream_dlt (streaming using spark.readStream and cloudFiles)
+# MAGIC - customers_dlt (batch)
+# MAGIC - products_dlt (batch)
+# MAGIC - stores_dlt (batch)
+# MAGIC
+# MAGIC Data sources:
+# MAGIC - IoT Stream: `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/iot_stream/`
+# MAGIC - Customers: `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/`
+# MAGIC - Products: `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/products/`
+# MAGIC - Stores: `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/stores/`
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.bronze.iot_stream_dlt",
-    comment="Raw IoT transaction stream from landing zone"
-)
-@dp.expect_or_drop("valid_transaction_id", "id IS NOT NULL")
-@dp.expect_or_drop("valid_transaction_date", "transaction_date IS NOT NULL")
+
+# TODO: Implement bronze_iot_stream_dlt() using @dp.table decorator
+# Hint: Use spark.readStream with cloudFiles format for JSON
+# Expected: Table at emanuel_db.bronze.iot_stream_dlt
 def bronze_iot_stream_dlt():
-    return (
-        spark.readStream
-        .format("cloudFiles")
-        .option("cloudFiles.format", "json")
-        .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/iot_stream/")
-        .withColumn("etl_timestamp", F.current_timestamp())
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.bronze.customers_dlt",
-    comment="Raw customer data from landing zone"
-)
-@dp.expect_or_drop("valid_customers_id", "id IS NOT NULL")
+
+# TODO: Implement bronze_customers_dlt()
+# Hint: Use spark.read for batch ingestion
+# Expected: Table at emanuel_db.bronze.customers_dlt
 def bronze_customers_dlt():
-    return (
-        spark.read
-        .format("json")
-        .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/")
-        .withColumn("etl_timestamp", F.current_timestamp())
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.bronze.products_dlt",
-    comment="Raw product data from landing zone"
-)
-@dp.expect_or_drop("valid_product_id", "id IS NOT NULL")
+
+# TODO: Implement bronze_products_dlt()
+# Hint: Use spark.read for batch ingestion
+# Expected: Table at emanuel_db.bronze.products_dlt
 def bronze_products_dlt():
-    return (
-        spark.read
-        .format("json")
-        .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/products/")
-        .withColumn("etl_timestamp", F.current_timestamp())
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.bronze.stores_dlt",
-    comment="Raw store data from landing zone"
-)
-@dp.expect_or_drop("valid_store_id", "id IS NOT NULL")
+
+# TODO: Implement bronze_stores_dlt()
+# Hint: Use spark.read for batch ingestion
+# Expected: Table at emanuel_db.bronze.stores_dlt
 def bronze_stores_dlt():
-    return (
-        spark.read
-        .format("json")
-        .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/stores/")
-        .withColumn("etl_timestamp", F.current_timestamp())
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC ## SILVER SCHEMA - Data Transformation
 # MAGIC
-# MAGIC Applies data cleansing, type casting, and deduplication.
+# MAGIC TODO: Define tables for:
+# MAGIC - silver_iot_stream_dlt (clean data types, handle streaming)
+# MAGIC - silver_customers_dlt (deduplicate, validate)
+# MAGIC - silver_products_dlt (deduplicate, validate)
+# MAGIC - silver_stores_dlt (deduplicate, validate)
+# MAGIC
+# MAGIC Tips:
+# MAGIC - Use dp.read() for static tables
+# MAGIC - Use dp.read_stream() for tables from streaming sources
+# MAGIC - Apply type casting with .cast()
+# MAGIC - Use .dropDuplicates() for deduplication
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.silver.iot_stream_dlt",
-    comment="Cleaned and typed transaction stream"
-)
-@dp.expect_or_drop("valid_transaction_amount", "transaction_amount IS NOT NULL")
-@dp.expect_or_drop("valid_transaction_date", "transaction_date IS NOT NULL")
+
+# TODO: Implement silver_iot_stream_dlt()
+# Hint: Read from bronze_iot_stream_dlt, apply type casting
+# Expected: Table at emanuel_db.silver.iot_stream_dlt
 def silver_iot_stream_dlt():
-    return (
-        dp.read_stream("bronze.iot_stream_dlt")
-        .withColumn("transaction_amount", F.col("transaction_amount").cast("double"))
-        .withColumn("transaction_date", F.to_date("transaction_date"))
-        .withColumn("customer_id", F.col("customer_id").cast("long"))
-        .withColumn("product_id", F.col("product_id").cast("long"))
-        .withColumn("store_id", F.col("store_id").cast("long"))
-        .withColumn("receipt_id", F.col("receipt_id").cast("long"))
-        .drop("_rescued_data")
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.silver.customers_dlt",
-    comment="Deduplicated and typed customer data"
-)
-@dp.expect_or_drop("valid_id", "id IS NOT NULL")
-#@dp.expect("valid_email_format", "customer_email LIKE '%@%' OR customer_email IS NULL")
-@dp.expect("reasonable_age", "age > 0 AND age < 150")
+
+# TODO: Implement silver_customers_dlt()
+# Hint: Read from bronze_customers_dlt, deduplicate, add expectations
+# Expected: Table at emanuel_db.silver.customers_dlt
 def silver_customers_dlt():
-    return (
-        dp.read("bronze.customers_dlt")
-        .dropDuplicates(["id"])
-        .withColumn("date", F.to_date("date"))
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.silver.products_dlt",
-    comment="Deduplicated and typed product data"
-)
-@dp.expect_or_drop("valid_id", "id IS NOT NULL")
+
+# TODO: Implement silver_products_dlt()
+# Hint: Read from bronze_products_dlt, deduplicate
+# Expected: Table at emanuel_db.silver.products_dlt
 def silver_products_dlt():
-    return (
-        dp.read("bronze.products_dlt")
-        .dropDuplicates(["id"])
-        .withColumn("date", F.to_date("date"))
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.silver.stores_dlt",
-    comment="Deduplicated and typed store data"
-)
-@dp.expect_or_drop("valid_id", "id IS NOT NULL")
+
+# TODO: Implement silver_stores_dlt()
+# Hint: Read from bronze_stores_dlt, deduplicate
+# Expected: Table at emanuel_db.silver.stores_dlt
 def silver_stores_dlt():
-    return (
-        dp.read("bronze.stores_dlt")
-        .dropDuplicates(["id"])
-        .withColumn("date", F.to_date("date"))
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
 # MAGIC %md
 # MAGIC ## GOLD SCHEMA - Dimension and Fact Tables
 # MAGIC
-# MAGIC Creates analytics-ready dimension and fact tables.
+# MAGIC TODO: Define tables for:
+# MAGIC - dim_customers_dlt (dimension table)
+# MAGIC - dim_stores_dlt (dimension table)
+# MAGIC - dim_products_dlt (dimension table)
+# MAGIC - fact_iot_transactions_dlt (fact table with joins)
+# MAGIC - sales_daily_summary_dlt (aggregation)
+# MAGIC
+# MAGIC Tips:
+# MAGIC - Dimension tables: select relevant columns
+# MAGIC - Fact tables: join dimensions and select facts
+# MAGIC - Aggregations: use groupBy with agg()
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.gold.dim_customers_dlt",
-    comment="Customer dimension table"
-)
-@dp.expect_or_drop("valid_pk", "id IS NOT NULL")
+
+# TODO: Implement gold_dim_customers_dlt()
+# Hint: Read from silver_customers_dlt, select id and relevant columns
+# Expected: Table at emanuel_db.gold.dim_customers_dlt
 def gold_dim_customers_dlt():
-    return (
-        dp.read("silver.customers_dlt")
-        .select(
-            "id",
-            "customer_name",
-            "address",
-            "age",
-            "gender",
-            "etl_timestamp"
-        )
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.gold.dim_stores_dlt",
-    comment="Store dimension table"
-)
-@dp.expect_or_drop("valid_pk", "id IS NOT NULL")
+
+# TODO: Implement gold_dim_stores_dlt()
+# Hint: Read from silver_stores_dlt, select id and relevant columns
+# Expected: Table at emanuel_db.gold.dim_stores_dlt
 def gold_dim_stores_dlt():
-    return (
-        dp.read("silver.stores_dlt")
-        .select(
-            "id",
-            "store_name",
-            "city",
-            "address",
-            "etl_timestamp"
-        )
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.gold.dim_products_dlt",
-    comment="Product dimension table"
-)
-@dp.expect_or_drop("valid_pk", "id IS NOT NULL")
+
+# TODO: Implement gold_dim_products_dlt()
+# Hint: Read from silver_products_dlt, select id and relevant columns
+# Expected: Table at emanuel_db.gold.dim_products_dlt
 def gold_dim_products_dlt():
-    return (
-        dp.read("silver.products_dlt")
-        .select(
-            "id",
-            "product_name",
-            "product_category",
-            "product_description",
-            "etl_timestamp"
-        )
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.gold.fact_iot_transactions_dlt",
-    comment="IoT transaction fact table with dimension joins"
-)
-@dp.expect_or_drop("valid_transaction", "transaction_amount IS NOT NULL AND transaction_date IS NOT NULL")
+
+# TODO: Implement gold_fact_iot_transactions_dlt()
+# Hint: Join silver_iot_stream_dlt with dimension tables, select facts and keys
+# Expected: Table at emanuel_db.gold.fact_iot_transactions_dlt
 def gold_fact_iot_transactions_dlt():
-    iot = dp.read_stream("silver.iot_stream_dlt")
-    customers = dp.read("silver.customers_dlt")
-    products = dp.read("silver.products_dlt")
-    stores = dp.read("silver.stores_dlt")
+    pass  # TODO: Implement
 
-    return (
-        iot
-        .join(customers, iot.customer_id == customers.id, "left")
-        .join(products, iot.product_id == products.id, "left")
-        .join(stores, iot.store_id == stores.id, "left")
-        .select(
-            iot.id,
-            iot.transaction_date,
-            iot.transaction_amount,
-            iot.customer_id,
-            iot.product_id,
-            iot.store_id,
-            iot.etl_timestamp,
-            customers.customer_name,
-            products.product_name,
-            products.product_category,
-            stores.store_name,
-            stores.city
-        )
-    )
 
 # COMMAND ----------
 
-@dp.table(
-    name="emanuel_db.gold.sales_daily_summary_dlt",
-    comment="Daily sales summary for dashboards"
-)
+
+# TODO: Implement gold_sales_daily_summary_dlt()
+# Hint: Aggregate fact table by date, store, and category
+# Expected: Table at emanuel_db.gold.sales_daily_summary_dlt
 def gold_sales_daily_summary_dlt():
-    return (
-        dp.read("gold.fact_iot_transactions_dlt")
-        .groupBy("transaction_date", "store_name", "product_category")
-        .agg(
-            F.count("*").alias("transaction_count"),
-            F.sum("transaction_amount").alias("total_revenue"),
-            F.avg("transaction_amount").alias("avg_transaction")
-        )
-    )
+    pass  # TODO: Implement
+
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Pipeline Summary
+# MAGIC ## Reference: DLT Decorators and Functions
 # MAGIC
-# MAGIC | Schema | Table Name | Description |
-# MAGIC |--------|------------|-------------|
-# MAGIC | bronze | iot_stream_dlt | Raw IoT transaction stream |
-# MAGIC | bronze | customers_dlt | Raw customer data |
-# MAGIC | bronze | products_dlt | Raw product data |
-# MAGIC | bronze | stores_dlt | Raw store data |
-# MAGIC | silver | iot_stream_dlt | Cleaned transaction stream |
-# MAGIC | silver | customers_dlt | Deduplicated customers |
-# MAGIC | silver | products_dlt | Deduplicated products |
-# MAGIC | silver | stores_dlt | Deduplicated stores |
-# MAGIC | gold | dim_customers_dlt | Customer dimension |
-# MAGIC | gold | dim_stores_dlt | Store dimension |
-# MAGIC | gold | dim_products_dlt | Product dimension |
-# MAGIC | gold | fact_iot_transactions_dlt | Transaction fact table |
-# MAGIC | gold | sales_daily_summary_dlt | Daily sales aggregation |
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## How to Run This Pipeline
+# MAGIC | Decorator/Function | Usage |
+# MAGIC |---------------------|-------|
+# MAGIC | `@dp.table(name="...")` | Define a DLT table |
+# MAGIC | `@dp.expect(name, condition)` | Add expectation (records violations) |
+# MAGIC | `@dp.expect_or_drop(name, condition)` | Drop rows that violate |
+# MAGIC | `@dp.expect_or_fail(name, condition)` | Fail pipeline on violation |
+# MAGIC | `dp.read(table_name)` | Read a DLT table |
+# MAGIC | `dp.read_stream(table_name)` | Read a streaming DLT table |
 # MAGIC
-# MAGIC 1. **Create Schemas** (if not exists):
-# MAGIC    ```sql
-# MAGIC    CREATE SCHEMA IF NOT EXISTS emanuel_db.bronze;
-# MAGIC    CREATE SCHEMA IF NOT EXISTS emanuel_db.silver;
-# MAGIC    CREATE SCHEMA IF NOT EXISTS emanuel_db.gold;
-# MAGIC    ```
+# MAGIC ## Reference: Data Sources
 # MAGIC
-# MAGIC 2. Go to **Delta Live Tables** in the sidebar
-# MAGIC 3. Click **Create Pipeline**
-# MAGIC 4. Add this notebook to the pipeline
-# MAGIC 5. Configure settings:
-# MAGIC    - **Pipeline Name**: `retail_analytics_dlt`
-# MAGIC    - **Target Catalog**: `emanuel_db`
-# MAGIC    - **Target Schema**: Leave empty (tables specify full path)
-# MAGIC    - **Pipeline Mode**: `Continuous` or `Triggered`
-# MAGIC 6. Add the external location path in pipeline settings
-# MAGIC 7. Click **Create** and then **Start**
+# MAGIC | Source | Path |
+# MAGIC |--------|------|
+# MAGIC | IoT Stream | `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/iot_stream/` |
+# MAGIC | Customers | `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/` |
+# MAGIC | Products | `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/products/` |
+# MAGIC | Stores | `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/stores/` |
