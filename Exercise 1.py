@@ -1,201 +1,252 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Data ingstion
-
-# COMMAND ----------
-
-# MAGIC %md 
-# MAGIC ## Data sources
-# MAGIC - **Transaction data** - abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/iot_stream/
-# MAGIC - **Customer data** - abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/
-# MAGIC - **Product data** - abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/products/
-# MAGIC - **Store data** - abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/stores/
+# MAGIC # Exercise 1: Data Ingestion (Bronze Layer)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC This exercies targets the first stage in the Medallion architecture, ingesting data from source to delta tables in `bronze` schema.
-# MAGIC The data can be found here: [source data](https://portal.azure.com/#view/Microsoft_Azure_Storage/ContainerMenuBlade/~/overview/storageAccountId/%2Fsubscriptions%2Fae6cbacb-2eac-42cc-978e-516b8ef7628d%2FresourceGroups%2Femhol-rg%2Fproviders%2FMicrosoft.Storage%2FstorageAccounts%2Flandingemhol/path/catalog/etag/%220x8DC5D4A6D306AE3%22/defaultEncryptionScope/%24account-encryption-key/denyEncryptionScopeOverride~/false/defaultId//publicAccessVal/None).
+# MAGIC ## Objective
+# MAGIC Ingest raw data from external sources into Delta tables in the Bronze layer using PySpark.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Data Sources
+# MAGIC | Source | Path |
+# MAGIC |--------|------|
+# MAGIC | Transaction data | `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/iot_stream/` |
+# MAGIC | Customer data | `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/` |
+# MAGIC | Product data | `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/products/` |
+# MAGIC | Store data | `abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/stores/` |
+# MAGIC
+# MAGIC The data is stored in Azure Data Lake Storage. To access it programmatically, use the Databricks SDK.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Architecture
+# MAGIC
+# MAGIC This exercise implements the **Bronze layer** of the Medallion architecture:
 # MAGIC
 # MAGIC ![medallion architecture](./docs/medallion_arch.png)
 # MAGIC
-# MAGIC To be able to access this storage location, an external location is needed. This has been created for you and can be viewed here [External location to external storage](https://adb-8983212560648347.7.azuredatabricks.net/explore/locations/emhollanding?o=8983212560648347).
-# MAGIC
-# MAGIC To programatically get the external location url you can use the package ```databricks.sdk``` and the class ```w = WorkspaceClient()```
+# MAGIC All ingested data should go to: `<catalog>.bronze.<table_name>`
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Task
-# MAGIC
-# MAGIC Use PySpark or Spark SQL to ingest data from source to bronze.
-
-# COMMAND ----------
-
-from databricks.sdk import WorkspaceClient
-
-# COMMAND ----------
-
-w = WorkspaceClient()
-
-# COMMAND ----------
-
-w.external_locations.get("landingneusa").url
+# MAGIC ## Setup
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ### Structured Streaming and Batch loads.
+# MAGIC ### Task 1: Get External Location URL
 # MAGIC
-# MAGIC Set up the ingestion step for the different data sources.
-# MAGIC Use Autoloader (```spark.readStream...```) for the transaction source and "batch mode" (```spark.read...```) for the dimensional data sources.
+# MAGIC Use the Databricks SDK to programmatically access the external location:
 # MAGIC
+# MAGIC 1. Import `WorkspaceClient` from `databricks.sdk`
+# MAGIC 2. Create a `WorkspaceClient` instance
+# MAGIC 3. Get the external location URL by name
 # MAGIC
-# MAGIC To complete the ingestion you also need to write the stream/batch to a target table (```spark_df.writeStream...```/```spark_df.write...```). We choose to write the source data to a delta table in our catalog and ```bronze``` schema. 
-# MAGIC
-# MAGIC We refer to tables with its three-level-space name e.g. ```emanuel_db.bronze.test_table```
-# MAGIC ![](./docs/catalog_schema.png)
-# MAGIC
+# MAGIC Reference: `WorkspaceClient()`, `external_locations.get()`
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Get external location URL
+# MAGIC from databricks.sdk import WorkspaceClient
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Get the landing URL
+# MAGIC w = WorkspaceClient()
+# MAGIC landing_url = w.external_locations.get("landingneusa").url
+# MAGIC print(landing_url)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Transaction Data (IoT stream)
-
-# COMMAND ----------
-
-from pyspark.sql import functions as F 
-
-df_trans = (spark.readStream
-            .format("cloudFiles")
-            .option("cloudFiles.format", "json")
-            #.option("cloudFiles.inferColumnTypes", "true")
-            .option("cloudFiles.schemaLocation", "/tmp/schema")
-            .load(f"{w.external_locations.get('landingneusa').url}/iot_stream/")
-            )
-
-
-df_trans = df_trans.withColumn("etl_timestamp", F.current_timestamp())
-
-
-(df_trans.writeStream
- .option("checkpointLocation", "/tmp/iot_stream_checkpoint")
- .option("partitionBy", "transaction_date")
- .trigger(once=True)
- .table("emanuel_db.bronze.iot_stream")
-)
-            
+# MAGIC ## Ingestion Tasks
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Clean up schema and checkpoint location
+# MAGIC ### Task 2: Ingest Transaction Data (Streaming)
+# MAGIC
+# MAGIC Use **Autoloader** (`cloudFiles`) to ingest the IoT transaction stream:
+# MAGIC
+# MAGIC Requirements:
+# MAGIC - Read as a **stream** using `spark.readStream`
+# MAGIC - Use `cloudFiles` format with JSON
+# MAGIC - Add a schema location for inference
+# MAGIC - Add an `etl_timestamp` column with current timestamp
+# MAGIC - Write to `emanuel_db.bronze.iot_stream`
+# MAGIC - Set a checkpoint location
+# MAGIC - Use `.trigger(once=True)` for batch-like behavior
+# MAGIC
+# MAGIC Reference: `spark.readStream`, `format("cloudFiles")`, `writeStream`, `checkpointLocation`
 
 # COMMAND ----------
 
-#dbutils.fs.rm("/tmp/iot_stream_checkpoint", True)
-#dbutils.fs.rm("/tmp/schema", True)
-#spark.sql("DROP TABLE IF EXISTS emanuel_db.bronze.iot_stream")
+# MAGIC %python
+# MAGIC from pyspark.sql import functions as F
 
 # COMMAND ----------
 
-df_trans.printSchema()
+# MAGIC %python
+# MAGIC # TODO: Read transaction stream using Autoloader
+# MAGIC df_trans = (
+# MAGIC     spark.readStream
+# MAGIC     .format("cloudFiles")
+# MAGIC     .option("cloudFiles.format", "json")
+# MAGIC     .option("cloudFiles.schemaLocation", "/tmp/schema")
+# MAGIC     .load(f"{landing_url}/iot_stream/")
+# MAGIC )
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Add etl_timestamp column
+# MAGIC df_trans = df_trans.withColumn("etl_timestamp", F.current_timestamp())
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Write stream to Bronze table
+# MAGIC (df_trans.writeStream
+# MAGIC  .option("checkpointLocation", "/tmp/iot_stream_checkpoint")
+# MAGIC  .option("partitionBy", "transaction_date")
+# MAGIC  .trigger(once=True)
+# MAGIC  .table("emanuel_db.bronze.iot_stream")
+# MAGIC )
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Read and Write Customers - Batch
+# MAGIC ### Task 3: Ingest Customer Data (Batch)
 # MAGIC
-# MAGIC **Read**
+# MAGIC Use **batch mode** to read the customer data:
 # MAGIC
-# MAGIC PySpark
-# MAGIC `spark.read.json("path")`
+# MAGIC Requirements:
+# MAGIC - Read as **batch** using `spark.read`
+# MAGIC - Read JSON files from the customers path
+# MAGIC - Add an `etl_timestamp` column
+# MAGIC - Write to `emanuel_db.bronze.customers`
 # MAGIC
-# MAGIC Spark SQL
-# MAGIC ```
-# MAGIC SELECT * FROM json.`abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/`
-# MAGIC ```
+# MAGIC Reference: `spark.read.json()`, `write.mode("overwrite")`
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Read customers as batch
+# MAGIC df_cus = spark.read.json(f"{landing_url}/customers/")
+# MAGIC df_cus.limit(10).display()
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Add timestamp and write to table
+# MAGIC df_cus = df_cus.withColumn("etl_timestamp", F.current_timestamp())
+# MAGIC df_cus.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.customers")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Task 4: Ingest Product Data (Batch)
 # MAGIC
-# MAGIC **Write**
+# MAGIC Repeat the same pattern for products:
 # MAGIC
-# MAGIC *PySpark*
-# MAGIC `spark_df.write.saveAsTable("catalog.schema.table")`
+# MAGIC Requirements:
+# MAGIC - Read JSON from the products path
+# MAGIC - Add `etl_timestamp` column
+# MAGIC - Write to `emanuel_db.bronze.products`
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Read products, add timestamp, write to table
+# MAGIC df_prod = spark.read.json(f"{landing_url}/products/")
+# MAGIC df_prod = df_prod.withColumn("etl_timestamp", F.current_timestamp())
+# MAGIC df_prod.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.products")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Task 5: Ingest Store Data (Batch)
 # MAGIC
-# MAGIC *Spark SQL*
+# MAGIC Complete the Bronze layer by ingesting store data:
 # MAGIC
-# MAGIC `CREATE TABLE emanuel_db.bronze.customers;`
+# MAGIC Requirements:
+# MAGIC - Read JSON from the stores path
+# MAGIC - Add `etl_timestamp` column
+# MAGIC - Write to `emanuel_db.bronze.stores`
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Read stores, add timestamp, write to table
+# MAGIC df_stores = spark.read.json(f"{landing_url}/stores/")
+# MAGIC df_stores = df_stores.withColumn("etl_timestamp", F.current_timestamp())
+# MAGIC df_stores.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.stores")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Verification
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Task 6: Inspect Bronze Tables
 # MAGIC
-# MAGIC ```
-# MAGIC COPY INTO emanuel_db.bronze.customers
-# MAGIC FROM 'abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/'
-# MAGIC FILEFORMAT = JSON;
-# MAGIC ```
+# MAGIC Verify your tables were created correctly:
+# MAGIC 1. Check the schema of each table
+# MAGIC 2. Preview the data
+# MAGIC 3. Count the records
 # MAGIC
+# MAGIC Tables to verify:
+# MAGIC - `emanuel_db.bronze.iot_stream`
+# MAGIC - `emanuel_db.bronze.customers`
+# MAGIC - `emanuel_db.bronze.products`
+# MAGIC - `emanuel_db.bronze.stores`
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select * from read_files('abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/')
+# MAGIC -- TODO: Check bronze tables exist
+# MAGIC SHOW TABLES IN emanuel_db.bronze;
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC SELECT * FROM json.`abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/`
-
-# COMMAND ----------
-
-# Reading Batch Data
-df_cus = spark.read.json(f"{w.external_locations.get('landingneusa').url}/customers/")
-df_cus.limit(10).display()
-
-# COMMAND ----------
-
-# Writing to a Table
-df_cus = df_cus.withColumn("etl_timestamp", F.current_timestamp())
-df_cus.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.customers")
-
-# COMMAND ----------
-
-#%sql
-#COPY INTO emanuel_db.bronze.customers
-#FROM 'abfss://catalog@landingemhol.dfs.core.windows.net/bootcamp/customers/'
-#FILEFORMAT = JSON
+# MAGIC -- TODO: Count records in each table
+# MAGIC SELECT 'iot_stream' as table_name, COUNT(*) as record_count FROM emanuel_db.bronze.iot_stream
+# MAGIC UNION ALL SELECT 'customers', COUNT(*) FROM emanuel_db.bronze.customers
+# MAGIC UNION ALL SELECT 'products', COUNT(*) FROM emanuel_db.bronze.products
+# MAGIC UNION ALL SELECT 'stores', COUNT(*) FROM emanuel_db.bronze.stores;
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Read and Write Products
-
-# COMMAND ----------
-
-df_prod = spark.read.json(f"{w.external_locations.get('landingneusa').url}/products/")
-df_prod.display()
-
-# COMMAND ----------
-
-df_prod = df_prod.withColumn("etl_timestamp", F.current_timestamp())
-df_prod.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.products")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Read and Write Stores
-
-# COMMAND ----------
-
-df_stores = spark.read.json(f"{w.external_locations.get('landingneusa').url}/stores/")
-df_stores.limit(10).display()
-
-# COMMAND ----------
-
-df_stores = df_stores.withColumn("etl_timestamp", F.current_timestamp())
-df_stores.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.stores")
+# MAGIC ## Cleanup (Optional)
+# MAGIC
+# MAGIC If you need to rerun the exercise, you can clean up with:
+# MAGIC
+# MAGIC ```python
+# MAGIC dbutils.fs.rm("/tmp/iot_stream_checkpoint", True)
+# MAGIC dbutils.fs.rm("/tmp/schema", True)
+# MAGIC spark.sql("DROP TABLE IF EXISTS emanuel_db.bronze.iot_stream")
+# MAGIC ```
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Inspect your new tables in under catalogs
-
-# COMMAND ----------
-
-
+# MAGIC ## Completion Checklist
+# MAGIC
+# MAGIC - [ ] External location URL retrieved
+# MAGIC - [ ] `bronze.iot_stream` created (streaming)
+# MAGIC - [ ] `bronze.customers` created (batch)
+# MAGIC - [ ] `bronze.products` created (batch)
+# MAGIC - [ ] `bronze.stores` created (batch)
+# MAGIC - [ ] All tables verified
