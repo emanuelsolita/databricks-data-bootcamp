@@ -9,9 +9,8 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC from pyspark import pipelines as dp
-# MAGIC from pyspark.sql import functions as F
+from pyspark import pipelines as dp
+from pyspark.sql import functions as F
 
 # COMMAND ----------
 
@@ -22,69 +21,65 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.bronze.iot_stream_dlt",
-# MAGIC     comment="Raw IoT transaction stream from landing zone"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_transaction_id", "id IS NOT NULL")
-# MAGIC @dp.expect_or_drop("valid_transaction_date", "transaction_date IS NOT NULL")
-# MAGIC def bronze_iot_stream_dlt():
-# MAGIC     return (
-# MAGIC         spark.readStream
-# MAGIC         .format("cloudFiles")
-# MAGIC         .option("cloudFiles.format", "json")
-# MAGIC         .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/iot_stream/")
-# MAGIC         .withColumn("etl_timestamp", F.current_timestamp())
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.bronze.iot_stream_dlt",
+    comment="Raw IoT transaction stream from landing zone"
+)
+@dp.expect_or_drop("valid_transaction_id", "id IS NOT NULL")
+@dp.expect_or_drop("valid_transaction_date", "transaction_date IS NOT NULL")
+def bronze_iot_stream_dlt():
+    return (
+        spark.readStream
+        .format("cloudFiles")
+        .option("cloudFiles.format", "json")
+        .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/iot_stream/")
+        .withColumn("etl_timestamp", F.current_timestamp())
+    )
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.bronze.customers_dlt",
-# MAGIC     comment="Raw customer data from landing zone"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_customer_id", "id IS NOT NULL")
-# MAGIC def bronze_customers_dlt():
-# MAGIC     return (
-# MAGIC         spark.read
-# MAGIC         .format("json")
-# MAGIC         .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/")
-# MAGIC         .withColumn("etl_timestamp", F.current_timestamp())
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.bronze.customers_dlt",
+    comment="Raw customer data from landing zone"
+)
+@dp.expect_or_drop("valid_customers_id", "id IS NOT NULL")
+def bronze_customers_dlt():
+    return (
+        spark.read
+        .format("json")
+        .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/customers/")
+        .withColumn("etl_timestamp", F.current_timestamp())
+    )
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.bronze.products_dlt",
-# MAGIC     comment="Raw product data from landing zone"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_product_id", "id IS NOT NULL")
-# MAGIC def bronze_products_dlt():
-# MAGIC     return (
-# MAGIC         spark.read
-# MAGIC         .format("json")
-# MAGIC         .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/products/")
-# MAGIC         .withColumn("etl_timestamp", F.current_timestamp())
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.bronze.products_dlt",
+    comment="Raw product data from landing zone"
+)
+@dp.expect_or_drop("valid_product_id", "id IS NOT NULL")
+def bronze_products_dlt():
+    return (
+        spark.read
+        .format("json")
+        .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/products/")
+        .withColumn("etl_timestamp", F.current_timestamp())
+    )
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.bronze.stores_dlt",
-# MAGIC     comment="Raw store data from landing zone"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_store_id", "id IS NOT NULL")
-# MAGIC def bronze_stores_dlt():
-# MAGIC     return (
-# MAGIC         spark.read
-# MAGIC         .format("json")
-# MAGIC         .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/stores/")
-# MAGIC         .withColumn("etl_timestamp", F.current_timestamp())
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.bronze.stores_dlt",
+    comment="Raw store data from landing zone"
+)
+@dp.expect_or_drop("valid_store_id", "id IS NOT NULL")
+def bronze_stores_dlt():
+    return (
+        spark.read
+        .format("json")
+        .load("abfss://landing@landingneusa.dfs.core.windows.net/bootcamp/stores/")
+        .withColumn("etl_timestamp", F.current_timestamp())
+    )
 
 # COMMAND ----------
 
@@ -95,71 +90,67 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.silver.iot_stream_dlt",
-# MAGIC     comment="Cleaned and typed transaction stream"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_transaction_amount", "transaction_amount IS NOT NULL")
-# MAGIC @dp.expect_or_drop("valid_transaction_date", "transaction_date IS NOT NULL")
-# MAGIC def silver_iot_stream_dlt():
-# MAGIC     return (
-# MAGIC         dp.read_stream("bronze.iot_stream_dlt")
-# MAGIC         .withColumn("transaction_amount", F.col("transaction_amount").cast("double"))
-# MAGIC         .withColumn("transaction_date", F.to_date("transaction_date"))
-# MAGIC         .withColumn("customer_id", F.col("customer_id").cast("long"))
-# MAGIC         .withColumn("product_id", F.col("product_id").cast("long"))
-# MAGIC         .withColumn("store_id", F.col("store_id").cast("long"))
-# MAGIC         .withColumn("receipt_id", F.col("receipt_id").cast("long"))
-# MAGIC         .drop("_rescued_data")
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.silver.iot_stream_dlt",
+    comment="Cleaned and typed transaction stream"
+)
+@dp.expect_or_drop("valid_transaction_amount", "transaction_amount IS NOT NULL")
+@dp.expect_or_drop("valid_transaction_date", "transaction_date IS NOT NULL")
+def silver_iot_stream_dlt():
+    return (
+        dp.read_stream("bronze.iot_stream_dlt")
+        .withColumn("transaction_amount", F.col("transaction_amount").cast("double"))
+        .withColumn("transaction_date", F.to_date("transaction_date"))
+        .withColumn("customer_id", F.col("customer_id").cast("long"))
+        .withColumn("product_id", F.col("product_id").cast("long"))
+        .withColumn("store_id", F.col("store_id").cast("long"))
+        .withColumn("receipt_id", F.col("receipt_id").cast("long"))
+        .drop("_rescued_data")
+    )
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.silver.customers_dlt",
-# MAGIC     comment="Deduplicated and typed customer data"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_id", "id IS NOT NULL")
-# MAGIC @dp.expect("valid_email_format", "customer_email LIKE '%@%' OR customer_email IS NULL")
-# MAGIC @dp.expect("reasonable_age", "customer_age > 0 AND customer_age < 150")
-# MAGIC def silver_customers_dlt():
-# MAGIC     return (
-# MAGIC         dp.read("bronze.customers_dlt")
-# MAGIC         .dropDuplicates(["id"])
-# MAGIC         .withColumn("date", F.to_date("date"))
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.silver.customers_dlt",
+    comment="Deduplicated and typed customer data"
+)
+@dp.expect_or_drop("valid_id", "id IS NOT NULL")
+#@dp.expect("valid_email_format", "customer_email LIKE '%@%' OR customer_email IS NULL")
+@dp.expect("reasonable_age", "age > 0 AND age < 150")
+def silver_customers_dlt():
+    return (
+        dp.read("bronze.customers_dlt")
+        .dropDuplicates(["id"])
+        .withColumn("date", F.to_date("date"))
+    )
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.silver.products_dlt",
-# MAGIC     comment="Deduplicated and typed product data"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_id", "id IS NOT NULL")
-# MAGIC def silver_products_dlt():
-# MAGIC     return (
-# MAGIC         dp.read("bronze.products_dlt")
-# MAGIC         .dropDuplicates(["id"])
-# MAGIC         .withColumn("date", F.to_date("date"))
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.silver.products_dlt",
+    comment="Deduplicated and typed product data"
+)
+@dp.expect_or_drop("valid_id", "id IS NOT NULL")
+def silver_products_dlt():
+    return (
+        dp.read("bronze.products_dlt")
+        .dropDuplicates(["id"])
+        .withColumn("date", F.to_date("date"))
+    )
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.silver.stores_dlt",
-# MAGIC     comment="Deduplicated and typed store data"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_id", "id IS NOT NULL")
-# MAGIC def silver_stores_dlt():
-# MAGIC     return (
-# MAGIC         dp.read("bronze.stores_dlt")
-# MAGIC         .dropDuplicates(["id"])
-# MAGIC         .withColumn("date", F.to_date("date"))
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.silver.stores_dlt",
+    comment="Deduplicated and typed store data"
+)
+@dp.expect_or_drop("valid_id", "id IS NOT NULL")
+def silver_stores_dlt():
+    return (
+        dp.read("bronze.stores_dlt")
+        .dropDuplicates(["id"])
+        .withColumn("date", F.to_date("date"))
+    )
 
 # COMMAND ----------
 
@@ -170,116 +161,112 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.gold.dim_customers_dlt",
-# MAGIC     comment="Customer dimension table"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_pk", "id IS NOT NULL")
-# MAGIC def gold_dim_customers_dlt():
-# MAGIC     return (
-# MAGIC         dp.read("silver.customers_dlt")
-# MAGIC         .select(
-# MAGIC             "id",
-# MAGIC             "customer_name",
-# MAGIC             "customer_email",
-# MAGIC             "customer_age",
-# MAGIC             "etl_timestamp"
-# MAGIC         )
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.gold.dim_customers_dlt",
+    comment="Customer dimension table"
+)
+@dp.expect_or_drop("valid_pk", "id IS NOT NULL")
+def gold_dim_customers_dlt():
+    return (
+        dp.read("silver.customers_dlt")
+        .select(
+            "id",
+            "customer_name",
+            "address",
+            "age",
+            "gender",
+            "etl_timestamp"
+        )
+    )
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.gold.dim_stores_dlt",
-# MAGIC     comment="Store dimension table"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_pk", "id IS NOT NULL")
-# MAGIC def gold_dim_stores_dlt():
-# MAGIC     return (
-# MAGIC         dp.read("silver.stores_dlt")
-# MAGIC         .select(
-# MAGIC             "id",
-# MAGIC             "store_name",
-# MAGIC             "store_city",
-# MAGIC             "store_country",
-# MAGIC             "etl_timestamp"
-# MAGIC         )
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.gold.dim_stores_dlt",
+    comment="Store dimension table"
+)
+@dp.expect_or_drop("valid_pk", "id IS NOT NULL")
+def gold_dim_stores_dlt():
+    return (
+        dp.read("silver.stores_dlt")
+        .select(
+            "id",
+            "store_name",
+            "city",
+            "address",
+            "etl_timestamp"
+        )
+    )
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.gold.dim_products_dlt",
-# MAGIC     comment="Product dimension table"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_pk", "id IS NOT NULL")
-# MAGIC def gold_dim_products_dlt():
-# MAGIC     return (
-# MAGIC         dp.read("silver.products_dlt")
-# MAGIC         .select(
-# MAGIC             "id",
-# MAGIC             "product_name",
-# MAGIC             "product_category",
-# MAGIC             "product_price",
-# MAGIC             "etl_timestamp"
-# MAGIC         )
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.gold.dim_products_dlt",
+    comment="Product dimension table"
+)
+@dp.expect_or_drop("valid_pk", "id IS NOT NULL")
+def gold_dim_products_dlt():
+    return (
+        dp.read("silver.products_dlt")
+        .select(
+            "id",
+            "product_name",
+            "product_category",
+            "product_description",
+            "etl_timestamp"
+        )
+    )
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.gold.fact_iot_transactions_dlt",
-# MAGIC     comment="IoT transaction fact table with dimension joins"
-# MAGIC )
-# MAGIC @dp.expect_or_drop("valid_transaction", "transaction_amount IS NOT NULL AND transaction_date IS NOT NULL")
-# MAGIC def gold_fact_iot_transactions_dlt():
-# MAGIC     iot = dp.read_stream("silver.iot_stream_dlt")
-# MAGIC     customers = dp.read("silver.customers_dlt")
-# MAGIC     products = dp.read("silver.products_dlt")
-# MAGIC     stores = dp.read("silver.stores_dlt")
+@dp.table(
+    name="emanuel_db.gold.fact_iot_transactions_dlt",
+    comment="IoT transaction fact table with dimension joins"
+)
+@dp.expect_or_drop("valid_transaction", "transaction_amount IS NOT NULL AND transaction_date IS NOT NULL")
+def gold_fact_iot_transactions_dlt():
+    iot = dp.read_stream("silver.iot_stream_dlt")
+    customers = dp.read("silver.customers_dlt")
+    products = dp.read("silver.products_dlt")
+    stores = dp.read("silver.stores_dlt")
 
-# MAGIC     return (
-# MAGIC         iot
-# MAGIC         .join(customers, iot.customer_id == customers.id, "left")
-# MAGIC         .join(products, iot.product_id == products.id, "left")
-# MAGIC         .join(stores, iot.store_id == stores.id, "left")
-# MAGIC         .select(
-# MAGIC             iot.id,
-# MAGIC             iot.transaction_date,
-# MAGIC             iot.transaction_amount,
-# MAGIC             iot.customer_id,
-# MAGIC             iot.product_id,
-# MAGIC             iot.store_id,
-# MAGIC             iot.etl_timestamp,
-# MAGIC             customers.customer_name,
-# MAGIC             products.product_name,
-# MAGIC             products.product_category,
-# MAGIC             stores.store_name,
-# MAGIC             stores.store_city
-# MAGIC         )
-# MAGIC     )
+    return (
+        iot
+        .join(customers, iot.customer_id == customers.id, "left")
+        .join(products, iot.product_id == products.id, "left")
+        .join(stores, iot.store_id == stores.id, "left")
+        .select(
+            iot.id,
+            iot.transaction_date,
+            iot.transaction_amount,
+            iot.customer_id,
+            iot.product_id,
+            iot.store_id,
+            iot.etl_timestamp,
+            customers.customer_name,
+            products.product_name,
+            products.product_category,
+            stores.store_name,
+            stores.city
+        )
+    )
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC @dp.table(
-# MAGIC     name="emanuel_db.gold.sales_daily_summary_dlt",
-# MAGIC     comment="Daily sales summary for dashboards"
-# MAGIC )
-# MAGIC def gold_sales_daily_summary_dlt():
-# MAGIC     return (
-# MAGIC         dp.read("gold.fact_iot_transactions_dlt")
-# MAGIC         .groupBy("transaction_date", "store_name", "product_category")
-# MAGIC         .agg(
-# MAGIC             F.count("*").alias("transaction_count"),
-# MAGIC             F.sum("transaction_amount").alias("total_revenue"),
-# MAGIC             F.avg("transaction_amount").alias("avg_transaction")
-# MAGIC         )
-# MAGIC     )
+@dp.table(
+    name="emanuel_db.gold.sales_daily_summary_dlt",
+    comment="Daily sales summary for dashboards"
+)
+def gold_sales_daily_summary_dlt():
+    return (
+        dp.read("gold.fact_iot_transactions_dlt")
+        .groupBy("transaction_date", "store_name", "product_category")
+        .agg(
+            F.count("*").alias("transaction_count"),
+            F.sum("transaction_amount").alias("total_revenue"),
+            F.avg("transaction_amount").alias("avg_transaction")
+        )
+    )
 
 # COMMAND ----------
 
