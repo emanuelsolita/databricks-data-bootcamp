@@ -71,7 +71,7 @@ df_trans = (spark.readStream
             .option("cloudFiles.format", "json")
             #.option("cloudFiles.inferColumnTypes", "true")
             .option("cloudFiles.schemaLocation", "/tmp/schema")
-            .load(f"{w.external_locations.get('landingneusa').url}bootcamp/iot_stream/")
+            .load(f"{w.external_locations.get('landingneusa').url}/iot_stream/")
             )
 
 
@@ -145,7 +145,7 @@ df_trans.printSchema()
 # COMMAND ----------
 
 # Reading Batch Data
-df_cus = spark.read.json(f"{w.external_locations.get('landingneusa').url}bootcamp/customers/")
+df_cus = spark.read.json(f"{w.external_locations.get('landingneusa').url}/customers/")
 df_cus.limit(10).display()
 
 # COMMAND ----------
@@ -168,7 +168,7 @@ df_cus.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("em
 
 # COMMAND ----------
 
-df_prod = spark.read.json(f"{w.external_locations.get('landingneusa').url}bootcamp/products/")
+df_prod = spark.read.json(f"{w.external_locations.get('landingneusa').url}/products/")
 df_prod.display()
 
 # COMMAND ----------
@@ -183,7 +183,7 @@ df_prod.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("e
 
 # COMMAND ----------
 
-df_stores = spark.read.json(f"{w.external_locations.get('landingneusa').url}bootcamp/stores/")
+df_stores = spark.read.json(f"{w.external_locations.get('landingneusa').url}/stores/")
 df_stores.limit(10).display()
 
 # COMMAND ----------
