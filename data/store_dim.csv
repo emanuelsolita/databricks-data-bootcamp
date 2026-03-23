@@ -1,0 +1,9 @@
+store_id,store_name,city,region
+STORE01,Downtown Store,Seattle,West
+STORE02,Uptown Store,Austin,East
+STORE03,Lakeside Plaza,Orlando,South
+STORE04,Northgate Mall,Chicago,North
+STORE05,Central Market,Denver,Central
+STORE06,Sunset Center,Miami,South
+STORE07,Westview Outlet,San Francisco,West
+STORE08,Eastside Emporium,Boston,East
