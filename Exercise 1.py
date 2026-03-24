@@ -66,6 +66,18 @@ print(landing_url)
 
 # COMMAND ----------
 
+dbutils.fs.ls(landing_url+'/customers')
+
+# COMMAND ----------
+
+spark.read.json(landing_url+'/customers').display()
+
+# COMMAND ----------
+
+
+
+# COMMAND ----------
+
 # MAGIC %md
 # MAGIC ## Ingestion Tasks
 
@@ -105,6 +117,10 @@ from pyspark.sql import functions as F
 # MAGIC - Write to `emanuel_db.bronze.customers`
 # MAGIC
 # MAGIC Reference: `spark.read.json()`, `write.mode("overwrite")`
+
+# COMMAND ----------
+
+
 
 # COMMAND ----------
 
