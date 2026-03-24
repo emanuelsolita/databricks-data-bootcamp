@@ -1,0 +1,22 @@
+[
+  {"product_id": "PROD100", "product_name": "Wireless Mouse", "category": "Accessories"},
+  {"product_id": "PROD101", "product_name": "Laptop 15-inch", "category": "Computers"},
+  {"product_id": "PROD102", "product_name": "Bluetooth Keyboard", "category": "Accessories"},
+  {"product_id": "PROD103", "product_name": "HD Monitor", "category": "Monitors"},
+  {"product_id": "PROD104", "product_name": "USB-C Hub", "category": "Accessories"},
+  {"product_id": "PROD105", "product_name": "Gaming Headset", "category": "Audio"},
+  {"product_id": "PROD106", "product_name": "External SSD", "category": "Storage"},
+  {"product_id": "PROD107", "product_name": "Webcam Pro", "category": "Accessories"},
+  {"product_id": "PROD108", "product_name": "Office Chair", "category": "Furniture"},
+  {"product_id": "PROD109", "product_name": "Wireless Charger", "category": "Accessories"},
+  {"product_id": "PROD110", "product_name": "Smartphone Stand", "category": "Accessories"},
+  {"product_id": "PROD111", "product_name": "Portable Projector", "category": "Electronics"},
+  {"product_id": "PROD112", "product_name": "Noise Cancelling Earbuds", "category": "Audio"},
+  {"product_id": "PROD113", "product_name": "Ergonomic Desk", "category": "Furniture"},
+  {"product_id": "PROD114", "product_name": "Fitness Tracker", "category": "Wearables"},
+  {"product_id": "PROD115", "product_name": "Smart Light Bulb", "category": "Home"},
+  {"product_id": "PROD116", "product_name": "Action Camera", "category": "Electronics"},
+  {"product_id": "PROD117", "product_name": "Tablet 10-inch", "category": "Computers"},
+  {"product_id": "PROD118", "product_name": "Wireless Speaker", "category": "Audio"},
+  {"product_id": "PROD119", "product_name": "Laptop Backpack", "category": "Accessories"}
+]

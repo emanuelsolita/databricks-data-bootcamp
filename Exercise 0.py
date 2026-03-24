@@ -1,373 +1,230 @@
 # Databricks notebook source
 # MAGIC %md
-# MAGIC # Getting started
+# MAGIC # Exercise 0: Getting Started with PySpark
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Create Cluster
-# MAGIC If not done already, please navigate to the cluster tab in the left pane. Under all-purpose compute, create a Personal compute as pictured below
+# MAGIC ## Objective
+# MAGIC Get familiar with the Databricks environment and learn the basics of PySpark.
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Setup Tasks
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Task 1: Create a Cluster
+# MAGIC If not already done, create a personal compute cluster:
+# MAGIC 1. Navigate to the **Compute** tab in the left sidebar
+# MAGIC 2. Under **All-purpose compute**, click **Create compute**
+# MAGIC 3. Select appropriate runtime and configuration
 # MAGIC
 # MAGIC ![create compute](./docs/create_compute.png)
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## Create Catalog and Schema
+# MAGIC ### Task 2: Create Catalog and Schemas
+# MAGIC Create the necessary catalog and schemas for the medallion architecture:
 # MAGIC
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC programmatic way of getting current user 
-
-# COMMAND ----------
-
-current_user = spark.sql("SELECT current_user()").collect()[0][0].split(".")[0]+"_db"
-current_user
+# MAGIC | Schema | Purpose |
+# MAGIC |--------|---------|
+# MAGIC | `bronze` | Raw, ingested data |
+# MAGIC | `silver` | Cleaned, transformed data |
+# MAGIC | `gold` | Aggregated, business-ready data |
+# MAGIC
+# MAGIC Use SQL to create:
+# MAGIC 1. A **catalog** named `emanuel_db`
+# MAGIC 2. Three **schemas**: `bronze`, `silver`, `gold` under the catalog
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC select replace(split(current_user, '@')[0], '.', '_') || '_db'
-
-# COMMAND ----------
-
-# MAGIC
-# MAGIC %sql
+# MAGIC -- TODO: Create the catalog
 # MAGIC CREATE CATALOG <catalog_name>;
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE CATALOG IF NOT EXISTS <catalog_name>;
+# MAGIC -- TODO: Create the bronze schema
+# MAGIC CREATE SCHEMA IF NOT EXISTS <catalog_name>.bronze;
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC CREATE SCHEMA IF NOT EXISTS <catalog_name>.<schema_name>;
+# MAGIC -- TODO: Create the silver schema
+# MAGIC CREATE SCHEMA IF NOT EXISTS <catalog_name>.silver;
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC -- TODO: Create the gold schema
+# MAGIC CREATE SCHEMA IF NOT EXISTS <catalog_name>.gold;
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## PySpark Fundamentals
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Task 3: Create and Manipulate DataFrames
 # MAGIC
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC # Introduction to PySpark
+# MAGIC Practice creating DataFrames and performing basic operations. Create a DataFrame with sample data containing:
+# MAGIC - Two columns: `name` (string) and `age` (integer)
+# MAGIC - At least 5 rows of data
 # MAGIC
-# MAGIC This notebook provides an introduction to using PySpark in Databricks. It covers the following topics:
+# MAGIC Reference: `spark.createDataFrame()`
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Create a DataFrame with sample data
+# MAGIC data = [...]  # Define your data
+# MAGIC df = ...      # Create the DataFrame
+# MAGIC df.display()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Task 4: Aggregations
 # MAGIC
-# MAGIC - What is PySpark?
-# MAGIC - Why use PySpark?
-# MAGIC - PySpark Data Structures
-# MAGIC - PySpark DataFrame Operations
-# MAGIC - PySpark SQL
-# MAGIC - PySpark MLlib
+# MAGIC Using the DataFrame you created:
+# MAGIC 1. Count the number of records per category (e.g., by age)
+# MAGIC 2. Calculate the average of a numeric column
 # MAGIC
-# MAGIC PySpark is the Python API for Apache Spark, which is an open-source, distributed computing system used for big data processing and analytics. PySpark provides an easy-to-use programming abstraction and parallel runtime that allows you to do big data processing with Python.
+# MAGIC Reference: `groupBy()`, `count()`, `agg()`
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Count records by category
+# MAGIC df.groupBy(...).count().display()
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Calculate average of numeric column
+# MAGIC df.agg(...).display()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Task 5: SQL Queries
 # MAGIC
-# MAGIC This notebook is based on the [PySpark documentation](https://spark.apache.org/docs/latest/api/python/index.html).
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Transformations and Actions
+# MAGIC Register your DataFrame as a temporary view and run SQL queries:
+# MAGIC 1. Create a temp view from your DataFrame
+# MAGIC 2. Run a SELECT query using `spark.sql()`
 # MAGIC
-# MAGIC PySpark operations can be divided into two categories: transformations and actions.
+# MAGIC Reference: `createOrReplaceTempView()`, `spark.sql()`
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Create temp view and run SQL query
+# MAGIC df.createOrReplaceTempView("my_view")
+# MAGIC spark.sql("SELECT * FROM my_view").display()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Task 6: Filtering
 # MAGIC
-# MAGIC - **Transformations** are operations that transform an RDD into another RDD. Examples include `map`, `filter`, and `reduceByKey`.
-# MAGIC - **Actions** are operations that trigger computation and return results. Examples include `count`, `collect`, and `saveAsTextFile`.
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## PySpark Data Structures
+# MAGIC Filter data using both PySpark syntax and SQL:
+# MAGIC 1. Filter rows where a numeric column meets a condition
+# MAGIC 2. Replicate the same filter using SQL
 # MAGIC
-# MAGIC PySpark provides two main data structures: RDDs and DataFrames.
+# MAGIC Reference: `filter()`, `where()`
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Filter using PySpark
+# MAGIC df.filter(...).display()
+
+# COMMAND ----------
+
+# MAGIC %sql
+# MAGIC -- TODO: Filter using SQL
+# MAGIC SELECT * FROM my_view WHERE ...
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Task 7: Sorting
 # MAGIC
-# MAGIC - **Resilient Distributed Datasets (RDDs)** are the building blocks of PySpark. They are immutable distributed collections of objects. Each RDD is split into multiple partitions, which may be computed on different nodes of the cluster.
-# MAGIC - **DataFrames** are distributed collections of data organized into named columns. They are conceptually equivalent to tables in a relational database or data frames in R/Python, but with richer optimizations under the hood.
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## PySpark DataFrame Operations
+# MAGIC Sort your DataFrame by a column:
+# MAGIC 1. Sort in ascending order
+# MAGIC 2. Sort in descending order
 # MAGIC
-# MAGIC PySpark DataFrames support a wide range of operations, including the following:
+# MAGIC Reference: `sort()`, `orderBy()`
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Sort data
+# MAGIC df.sort(...).display()
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ### Task 8: Joining
 # MAGIC
-# MAGIC - **Aggregations**: `groupBy`, `avg`, `max`, `min`, etc.
-# MAGIC - **Filtering**: `filter`, `where`
-# MAGIC - **Sorting**: `sort`, `orderBy`
-# MAGIC - **Joining**: `join`, `crossJoin`
-# MAGIC - **Sampling**: `sampleBy`, `randomSplit`
-# MAGIC - **Statistics**: `describe`
-# MAGIC - **Writing to Files**: `write`, `saveAsTable`
+# MAGIC Practice joining two DataFrames:
+# MAGIC 1. Create a second DataFrame with additional information
+# MAGIC 2. Join both DataFrames on a common column
+# MAGIC 3. Join on different column names
 # MAGIC
-# MAGIC PySpark DataFrames can be created from a variety of data sources, including CSV, JSON, Avro, Parquet, ORC, JDBC, and more.
+# MAGIC Reference: `join()`
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Create second DataFrame
+# MAGIC data2 = [...]
+# MAGIC df2 = ...
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Join on same column name
+# MAGIC df.join(df2, "common_column").display()
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Join on different column names
+# MAGIC df.join(df2, df["col1"] == df2["col2"]).display()
 
 # COMMAND ----------
 
 # MAGIC %md
-# MAGIC ## PySpark SQL
+# MAGIC ### Task 9: Writing to Tables
 # MAGIC
-# MAGIC PySpark SQL provides a domain-specific language for working with structured data. It includes the following features:
+# MAGIC Save your DataFrame to a Delta table:
+# MAGIC 1. Write to a table using `saveAsTable()`
+# MAGIC 2. Use the three-level naming: `<catalog>.<schema>.<table_name>`
 # MAGIC
-# MAGIC - **SQL Queries**: Run SQL queries on DataFrames.
-# MAGIC - **User-Defined Functions (UDFs)**: Define custom functions in Python and use them in SQL queries.
-# MAGIC - **Hive Integration**: Access Hive tables and run Hive queries.
+# MAGIC Reference: `write.saveAsTable()`
+
+# COMMAND ----------
+
+# MAGIC %python
+# MAGIC # TODO: Write DataFrame to Delta table
+# MAGIC df.write.saveAsTable("<catalog>.<schema>.<table_name>")
+
+# COMMAND ----------
+
+# MAGIC %md
+# MAGIC ## Completion Checklist
 # MAGIC
-# MAGIC PySpark SQL is used to process structured data, such as tables in a relational database or data frames in R/Python.
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## PySpark MLlib
-# MAGIC
-# MAGIC PySpark MLlib is the machine learning library in PySpark. It provides a wide range of machine learning algorithms and utilities, including the following:
-# MAGIC
-# MAGIC - **Classification**: Logistic Regression, Decision Trees, Random Forest, Gradient Boosting, etc.
-# MAGIC - **Regression**: Linear Regression, Generalized Linear Regression, Decision Trees, Random Forest, Gradient Boosting, etc.
-# MAGIC - **Clustering**: K-Means, Gaussian Mixture, etc.
-# MAGIC - **Recommendation**: Alternating Least Squares (ALS)
-# MAGIC - **Dimensionality Reduction**: Principal Component Analysis (PCA)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Aggregations
-
-# COMMAND ----------
-
-# Create a DataFrame
-data = [("Alice", 34), ("Bob", 45), ("Charlie", 56)]
-df = spark.createDataFrame(data, ["name", "age"])
-df.display()
-
-# COMMAND ----------
-
-# Group by age and count the number of people in each age group
-df.groupBy("age").count().display()
-
-# COMMAND ----------
-
-# Calculate the average age
-df.agg({"age": "avg"}).display()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## PySpark SQL
-
-# COMMAND ----------
-
-# Creating a Temp View for demo purposes
-df.createOrReplaceTempView("people")
-
-# COMMAND ----------
-
-# Run a SQL query on the DataFrame
-spark.sql("SELECT * FROM people").display()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Filtering
-
-# COMMAND ----------
-
-# Filter people who are older than 40
-df.filter(df["age"] > 40).display()
-
-# COMMAND ----------
-
-# Filter people who are older than 40 using SQL
-spark.sql("SELECT * FROM people WHERE age > 40").display()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Transformations
-# MAGIC
-
-# COMMAND ----------
-
-# Below transaction_amount is cast to double - for reference only
-df_trans = df_trans.withColumn("transaction_amount", F.col("transaction_amount").cast("double"))
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Sorting
-
-# COMMAND ----------
-
-# Sort by age in descending order
-df.sort(df["age"].desc()).display()
-
-# COMMAND ----------
-
-# Sort by age in descending order using SQL
-spark.sql("SELECT * FROM people ORDER BY age DESC").display()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Joining
-
-# COMMAND ----------
-
-# Create two DataFrames
-data1 = [("Alice", 34), ("Bob", 45), ("Charlie", 56)]
-df1 = spark.createDataFrame(data1, ["name", "age"])
-data2 = [("Alice", "Engineer"), ("Bob", "Doctor"), ("Charlie", "Lawyer")]
-df2 = spark.createDataFrame(data2, ["name", "profession"])
-
-# Join the two DataFrames on the "name" column
-df1.join(df2, "name").display()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Joining on different columns
-
-# COMMAND ----------
-
-# Create two DataFrames
-data1 = [("Alice", 34), ("Bob", 45), ("Charlie", 56)]
-df1 = spark.createDataFrame(data1, ["name", "age"])
-data2 = [("Alice", "Engineer"), ("Bob", "Doctor"), ("Charlie", "Lawyer")]
-df2 = spark.createDataFrame(data2, ["person", "profession"])
-
-# Join the two DataFrames on different columns
-df1.join(df2, df1["name"] == df2["person"]).display()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Sampling
-
-# COMMAND ----------
-
-# Sample 50% of the data
-df.sample(False, 0.5).display()
-
-# COMMAND ----------
-
-# Sample 50% of the data using SQL
-spark.sql("SELECT * FROM people TABLESAMPLE(50 PERCENT)").display()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Statistics
-
-# COMMAND ----------
-
-# Calculate summary statistics
-df.describe().display()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Writing to Delta Table
-
-# COMMAND ----------
-
-df.write.saveAsTable("<catalog>.<schema>.<table>")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Writing to Files
-
-# COMMAND ----------
-
-# Write the DataFrame to a CSV file
-# Note that below path are pointing to DBFS (Databricks internal storage) and is not adviced to use in real life use cases.
-df.write.csv("/tmp/people.csv")
-
-# COMMAND ----------
-
-# Write the DataFrame to a Parquet file
-# Note that below path are pointing to DBFS (Databricks internal storage) and is not adviced to use in real life use cases.
-df.write.parquet("/tmp/people.parquet")
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Read data
-# MAGIC
-
-# COMMAND ----------
-
-# Read batch
-spark.read.csv("/tmp/people.csv").display()
-
-# COMMAND ----------
-
-# Read stream
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType
-
-# Define the schema
-schema = StructType([
-    StructField("name", StringType(), True),
-    StructField("age", IntegerType(), True)
-])
-
-df_stream = spark.readStream.format("csv").schema(schema).load("/tmp/people.csv")
-display(df_stream)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Write stream to delta table
-
-# COMMAND ----------
-
-# For reference only - Doesn't work
-df_trans = (spark.readStream
-            .format("cloudFiles")
-            .option("cloudFiles.format", "json")
-            #.option("cloudFiles.inferColumnTypes", "true")
-            .option("cloudFiles.schemaLocation", "/tmp/schema") # Schema location where the schema is stored
-            .load(f"{w.external_locations.get('emhollanding').url}bootcamp/iot_stream/")
-            )
-
-(df_trans.writeStream
- .option("checkpointLocation", "/tmp/iot_stream_checkpoint") # Checkpoint location where the stream is checkpointed
- .option("partitionBy", "transaction_date")
- .trigger(once=True)
- .table("catalog.bronze.iot_stream")
-)
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## User-Defined Functions (UDFs)
-
-# COMMAND ----------
-
-# Define a UDF that adds 10 to a number
-from pyspark.sql.functions import udf
-from pyspark.sql.types import IntegerType
-
-add_10 = udf(lambda x: x + 10, IntegerType())
-
-# Apply the UDF to the "age" column
-df.withColumn("age_plus_10", add_10(df["age"])).display()
-
-# COMMAND ----------
-
-# MAGIC %md
-# MAGIC ## Clean up temp
-
-# COMMAND ----------
-
-dbutils.fs.ls("/tmp/")
-
-# COMMAND ----------
-
-dbutils.fs.rm("/tmp/people.parquet", True)
-dbutils.fs.rm("/tmp/people.csv", True)
-
-# COMMAND ----------
-
-
+# MAGIC Before moving on, verify you've completed:
+# MAGIC - [ ] Cluster created
+# MAGIC - [ ] Catalog and schemas created
+# MAGIC - [ ] DataFrame operations (create, filter, sort, join)
+# MAGIC - [ ] SQL queries on DataFrames
+# MAGIC - [ ] Data written to Delta table

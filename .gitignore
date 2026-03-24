@@ -1,0 +1,6 @@
+# Databricks/DevKit ignored files
+.databricks-resources/
+.ai-dev-kit/
+.gemini/
+.github/
+.vscode/
