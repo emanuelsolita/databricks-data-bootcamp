@@ -1,0 +1,178 @@
+{
+  "version": 1,
+  "datasets": [
+    {
+      "id": "ds1",
+      "name": "ds1_q",
+      "displayName": "Customers",
+      "query": "SELECT COUNT(*) as cnt FROM emanuel_db.gold.dim_customers"
+    },
+    {
+      "id": "ds2",
+      "name": "ds2_q",
+      "displayName": "Products",
+      "query": "SELECT COUNT(*) as cnt FROM emanuel_db.gold.dim_products"
+    },
+    {
+      "id": "ds3",
+      "name": "ds3_q",
+      "displayName": "Stores",
+      "query": "SELECT COUNT(*) as cnt FROM emanuel_db.gold.dim_stores"
+    },
+    {
+      "id": "ds4",
+      "name": "ds4_q",
+      "displayName": "Gender",
+      "query": "SELECT gender, COUNT(*) as cnt FROM emanuel_db.gold.dim_customers GROUP BY gender"
+    },
+    {
+      "id": "ds5",
+      "name": "ds5_q",
+      "displayName": "Categories",
+      "query": "SELECT product_category, COUNT(*) as cnt FROM emanuel_db.gold.dim_products GROUP BY product_category ORDER BY cnt DESC"
+    },
+    {
+      "id": "ds8",
+      "name": "ds8_q",
+      "displayName": "TotalRevenue",
+      "query": "SELECT SUM(transaction_amount) as total_revenue FROM emanuel_db.gold.iot_data"
+    },
+    {
+      "id": "ds9",
+      "name": "ds9_q",
+      "displayName": "TransactionCount",
+      "query": "SELECT COUNT(*) as transaction_count FROM emanuel_db.gold.iot_data"
+    },
+    {
+      "id": "ds10",
+      "name": "ds10_q",
+      "displayName": "RevenueByStore",
+      "query": "SELECT store_name, SUM(transaction_amount) as revenue FROM emanuel_db.gold.iot_data GROUP BY store_name ORDER BY revenue DESC"
+    },
+    {
+      "id": "ds11",
+      "name": "ds11_q",
+      "displayName": "TopProducts",
+      "query": "SELECT product_name, SUM(transaction_amount) as revenue FROM emanuel_db.gold.iot_data GROUP BY product_name ORDER BY revenue DESC LIMIT 10"
+    },
+    {
+      "id": "ds12",
+      "name": "ds12_q",
+      "displayName": "DailyTransactions",
+      "query": "SELECT transaction_date, COUNT(*) as cnt FROM emanuel_db.gold.iot_data GROUP BY transaction_date ORDER BY transaction_date"
+    }
+  ],
+  "pages": [
+    {
+      "id": "page1",
+      "name": "Overview",
+      "displayName": "Overview",
+      "pageType": "PAGE_TYPE_CANVAS",
+      "widgets": [
+        {
+          "widget": {
+            "name": "kpi-revenue",
+            "layout": { "x": 0, "y": 0, "width": 2, "height": 4 }
+          },
+          "frame": { "title": "Total Revenue", "showTitle": true },
+          "counter": {
+            "version": 2,
+            "disaggregated": true,
+            "queries": [{ "name": "main_query", "query": "SELECT SUM(transaction_amount) as total_revenue FROM emanuel_db.gold.iot_data" }],
+            "encodings": { "value": { "fieldName": "total_revenue" } }
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi-transactions",
+            "layout": { "x": 2, "y": 0, "width": 2, "height": 4 }
+          },
+          "frame": { "title": "Total Transactions", "showTitle": true },
+          "counter": {
+            "version": 2,
+            "disaggregated": true,
+            "queries": [{ "name": "main_query", "query": "SELECT COUNT(*) as transaction_count FROM emanuel_db.gold.iot_data" }],
+            "encodings": { "value": { "fieldName": "transaction_count" } }
+          }
+        },
+        {
+          "widget": {
+            "name": "kpi-customers",
+            "layout": { "x": 4, "y": 0, "width": 2, "height": 4 }
+          },
+          "frame": { "title": "Total Customers", "showTitle": true },
+          "counter": {
+            "version": 2,
+            "disaggregated": true,
+            "queries": [{ "name": "main_query", "query": "SELECT COUNT(*) as cnt FROM emanuel_db.gold.dim_customers" }],
+            "encodings": { "value": { "fieldName": "cnt" } }
+          }
+        },
+        {
+          "widget": {
+            "name": "chart-daily",
+            "layout": { "x": 0, "y": 4, "width": 3, "height": 6 }
+          },
+          "frame": { "title": "Daily Transactions", "showTitle": true },
+          "line": {
+            "version": 3,
+            "disaggregated": true,
+            "queries": [{ "name": "main_query", "query": "SELECT transaction_date, COUNT(*) as cnt FROM emanuel_db.gold.iot_data GROUP BY transaction_date ORDER BY transaction_date" }],
+            "encodings": {
+              "x": { "fieldName": "transaction_date", "scale": { "type": "temporal" } },
+              "y": { "fieldName": "cnt", "scale": { "type": "quantitative" } }
+            }
+          }
+        },
+        {
+          "widget": {
+            "name": "chart-revenue-store",
+            "layout": { "x": 3, "y": 4, "width": 3, "height": 6 }
+          },
+          "frame": { "title": "Revenue by Store", "showTitle": true },
+          "bar": {
+            "version": 3,
+            "disaggregated": true,
+            "queries": [{ "name": "main_query", "query": "SELECT store_name, SUM(transaction_amount) as revenue FROM emanuel_db.gold.iot_data GROUP BY store_name ORDER BY revenue DESC" }],
+            "encodings": {
+              "x": { "fieldName": "revenue", "scale": { "type": "quantitative" } },
+              "y": { "fieldName": "store_name", "scale": { "type": "categorical" } }
+            }
+          }
+        },
+        {
+          "widget": {
+            "name": "chart-gender",
+            "layout": { "x": 0, "y": 10, "width": 3, "height": 6 }
+          },
+          "frame": { "title": "Customer Gender Distribution", "showTitle": true },
+          "pie": {
+            "version": 3,
+            "disaggregated": true,
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds4_q", "fields": [{ "name": "gender", "expression": "`gender`" }, { "name": "cnt", "expression": "`cnt`" }], "disaggregated": true } }],
+            "encodings": {
+              "angle": { "fieldName": "cnt" },
+              "color": { "fieldName": "gender" }
+            }
+          }
+        },
+        {
+          "widget": {
+            "name": "chart-top-products",
+            "layout": { "x": 3, "y": 10, "width": 3, "height": 6 }
+          },
+          "frame": { "title": "Top 10 Products by Revenue", "showTitle": true },
+          "pie": {
+            "version": 3,
+            "disaggregated": true,
+            "queries": [{ "name": "main_query", "query": { "datasetName": "ds11_q", "fields": [{ "name": "product_name", "expression": "`product_name`" }, { "name": "revenue", "expression": "`revenue`" }], "disaggregated": true } }],
+            "encodings": {
+              "angle": { "fieldName": "revenue" },
+              "color": { "fieldName": "product_name" }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
