@@ -65,8 +65,6 @@
 
 # MAGIC %sql
 # MAGIC -- TODO: Create dim_customers table
-# MAGIC CREATE OR REPLACE TABLE emanuel_db.gold.dim_customers
-# MAGIC AS SELECT * EXCEPT(date) FROM emanuel_db.silver.customers;
 
 # COMMAND ----------
 
@@ -98,8 +96,6 @@
 
 # MAGIC %sql
 # MAGIC -- TODO: Create dim_stores table
-# MAGIC CREATE OR REPLACE TABLE emanuel_db.gold.dim_stores
-# MAGIC AS SELECT * EXCEPT(date) FROM emanuel_db.silver.stores;
 
 # COMMAND ----------
 
@@ -130,20 +126,18 @@
 
 # MAGIC %sql
 # MAGIC -- TODO: Create dim_products table
-# MAGIC CREATE OR REPLACE TABLE emanuel_db.gold.dim_products
-# MAGIC AS SELECT * EXCEPT(date) FROM emanuel_db.silver.products;
 
 # COMMAND ----------
 
 # MAGIC %sql
 # MAGIC -- TODO: Add constraints
-# MAGIC ALTER TABLE emanuel_db.gold.dim_products
+# MAGIC ALTER TABLE .gold.dim_products
 # MAGIC ALTER COLUMN id SET NOT NULL;
 
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC ALTER TABLE emanuel_db.gold.dim_products
+# MAGIC ALTER TABLE .gold.dim_products
 # MAGIC ADD CONSTRAINT dim_products_pk PRIMARY KEY (id);
 
 # COMMAND ----------
@@ -178,26 +172,7 @@
 # COMMAND ----------
 
 # MAGIC %sql
-# MAGIC -- TODO: Drop existing table if exists
-# MAGIC DROP TABLE IF EXISTS emanuel_db.gold.iot_data;
-
-# COMMAND ----------
-
-# MAGIC %sql
 # MAGIC -- TODO: Create fact table with constraints
-# MAGIC CREATE OR REPLACE TABLE emanuel_db.gold.iot_data (
-# MAGIC   id string PRIMARY KEY,
-# MAGIC   customer_id bigint,
-# MAGIC   product_id bigint,
-# MAGIC   receipt_id bigint,
-# MAGIC   store_id bigint,
-# MAGIC   transaction_amount double,
-# MAGIC   transaction_date date,
-# MAGIC   etl_timestamp timestamp,
-# MAGIC   CONSTRAINT fk_customers FOREIGN KEY (customer_id) REFERENCES emanuel_db.gold.dim_customers(id),
-# MAGIC   CONSTRAINT fk_products FOREIGN KEY (product_id) REFERENCES emanuel_db.gold.dim_products(id),
-# MAGIC   CONSTRAINT fk_stores FOREIGN KEY (store_id) REFERENCES emanuel_db.gold.dim_stores(id)
-# MAGIC );
 
 # COMMAND ----------
 
@@ -223,32 +198,7 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Create fact table with joins
-# MAGIC query = """
-# MAGIC     INSERT OVERWRITE TABLE emanuel_db.gold.iot_data
-# MAGIC     SELECT
-# MAGIC         iot.id,
-# MAGIC         iot.customer_id,
-# MAGIC         iot.product_id,
-# MAGIC         iot.receipt_id,
-# MAGIC         iot.store_id,
-# MAGIC         iot.transaction_amount,
-# MAGIC         iot.transaction_date,
-# MAGIC         iot.etl_timestamp,
-# MAGIC         c.customer_name,
-# MAGIC         p.product_name,
-# MAGIC         s.store_name
-# MAGIC     FROM
-# MAGIC         emanuel_db.silver.iot_stream AS iot
-# MAGIC     JOIN
-# MAGIC         emanuel_db.silver.customers AS c ON iot.customer_id = c.id
-# MAGIC     JOIN
-# MAGIC         emanuel_db.silver.products AS p ON iot.product_id = p.id
-# MAGIC     JOIN
-# MAGIC         emanuel_db.silver.stores AS s ON iot.store_id = s.id
-# MAGIC """
-# MAGIC spark.sql(query)
+# TODO: Create fact table with joins
 
 # COMMAND ----------
 

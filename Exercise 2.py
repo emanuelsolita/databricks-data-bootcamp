@@ -45,40 +45,23 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC from pyspark.sql import functions as F
+from pyspark.sql import functions as F
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Read and inspect bronze.iot_stream
-# MAGIC df_trans = spark.read.table("emanuel_db.bronze.iot_stream")
-# MAGIC df_trans.printSchema()
-# MAGIC df_trans.display()
+# TODO: Read and inspect bronze.iot_stream
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Read and inspect bronze.customers
-# MAGIC df_customers = spark.read.table("emanuel_db.bronze.customers")
-# MAGIC df_customers.printSchema()
-# MAGIC df_customers.display()
+# TODO: Read and inspect bronze.customers
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Read and inspect bronze.products
-# MAGIC df_products = spark.read.table("emanuel_db.bronze.products")
-# MAGIC df_products.printSchema()
-# MAGIC df_products.display()
+# TODO: Read and inspect bronze.products
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Read and inspect bronze.stores
-# MAGIC df_stores = spark.read.table("emanuel_db.bronze.stores")
-# MAGIC df_stores.printSchema()
-# MAGIC df_stores.display()
+# TODO: Read and inspect bronze.stores
 
 # COMMAND ----------
 
@@ -93,9 +76,7 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Check for duplicates in each table
-# MAGIC df_customers.groupBy("id").count().filter("count > 1").display()
+# TODO: Check for duplicates in each table
 
 # COMMAND ----------
 
@@ -127,35 +108,15 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Read and transform iot_stream
-# MAGIC df_trans = (spark.readStream
-# MAGIC              .table("emanuel_db.bronze.iot_stream"))
+# TODO: Read and transform iot_stream
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Cast columns to correct types
-# MAGIC df_trans = (df_trans
-# MAGIC     .withColumn("transaction_amount", F.col("transaction_amount").cast("double"))
-# MAGIC     .withColumn("transaction_date", F.to_date("transaction_date"))
-# MAGIC     .withColumn("customer_id", F.col("customer_id").cast("long"))
-# MAGIC     .withColumn("product_id", F.col("product_id").cast("long"))
-# MAGIC     .withColumn("store_id", F.col("store_id").cast("long"))
-# MAGIC     .withColumn("receipt_id", F.col("receipt_id").cast("long"))
-# MAGIC     .drop("_rescued_data")
-# MAGIC )
+# TODO: Cast columns to correct types
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Write to silver with streaming
-# MAGIC (df_trans.writeStream
-# MAGIC     .format("delta")
-# MAGIC     .option("checkpointLocation", "/usr/local/checkpoint/iot_stream")
-# MAGIC     .option("overwriteSchema", "true")
-# MAGIC     .trigger(once=True)
-# MAGIC     .table("emanuel_db.silver.iot_stream"))
+# TODO: Write to silver with streaming
 
 # COMMAND ----------
 
@@ -174,20 +135,11 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Deduplicate and transform customers
-# MAGIC df_customers = spark.read.table("emanuel_db.bronze.customers")
-# MAGIC df_customers = df_customers.dropDuplicates(["id"]).withColumn("date", F.to_date("date"))
+# TODO: Deduplicate and transform customers
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Write to silver
-# MAGIC (df_customers.write
-# MAGIC     .format("delta")
-# MAGIC     .mode("overwrite")
-# MAGIC     .option("overwriteSchema", "true")
-# MAGIC     .saveAsTable("emanuel_db.silver.customers"))
+# TODO: Write to silver
 
 # COMMAND ----------
 
@@ -203,20 +155,11 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Deduplicate and transform products
-# MAGIC df_products = spark.read.table("emanuel_db.bronze.products")
-# MAGIC df_products = df_products.dropDuplicates(["id"]).withColumn("date", F.to_date("date"))
+# TODO: Deduplicate and transform products
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Write to silver
-# MAGIC (df_products.write
-# MAGIC     .format("delta")
-# MAGIC     .mode("overwrite")
-# MAGIC     .option("overwriteSchema", "true")
-# MAGIC     .saveAsTable("emanuel_db.silver.products"))
+# TODO: Write to silver
 
 # COMMAND ----------
 
@@ -232,20 +175,11 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Deduplicate and transform stores
-# MAGIC df_stores = spark.read.table("emanuel_db.bronze.stores")
-# MAGIC df_stores = df_stores.dropDuplicates(["id"]).withColumn("date", F.to_date("date"))
+# TODO: Deduplicate and transform stores
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Write to silver
-# MAGIC (df_stores.write
-# MAGIC     .format("delta")
-# MAGIC     .mode("overwrite")
-# MAGIC     .option("overwriteSchema", "true")
-# MAGIC     .saveAsTable("emanuel_db.silver.stores"))
+# TODO: Write to silver
 
 # COMMAND ----------
 
