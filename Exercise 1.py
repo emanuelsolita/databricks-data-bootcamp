@@ -52,17 +52,17 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Get external location URL
-# MAGIC from databricks.sdk import WorkspaceClient
+
+# TODO: Get external location URL
+from databricks.sdk import WorkspaceClient
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Get the landing URL
-# MAGIC w = WorkspaceClient()
-# MAGIC landing_url = w.external_locations.get("landingneusa").url
-# MAGIC print(landing_url)
+
+# TODO: Get the landing URL
+w = WorkspaceClient()
+landing_url = w.external_locations.get("landingneusa").url
+print(landing_url)
 
 # COMMAND ----------
 
@@ -89,37 +89,37 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC from pyspark.sql import functions as F
+
+from pyspark.sql import functions as F
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Read transaction stream using Autoloader
-# MAGIC df_trans = (
-# MAGIC     spark.readStream
-# MAGIC     .format("cloudFiles")
-# MAGIC     .option("cloudFiles.format", "json")
-# MAGIC     .option("cloudFiles.schemaLocation", "/tmp/schema")
-# MAGIC     .load(f"{landing_url}/iot_stream/")
-# MAGIC )
+
+# TODO: Read transaction stream using Autoloader
+df_trans = (
+    spark.readStream
+    .format("cloudFiles")
+    .option("cloudFiles.format", "json")
+    .option("cloudFiles.schemaLocation", "/tmp/schema")
+    .load(f"{landing_url}/iot_stream/")
+)
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Add etl_timestamp column
-# MAGIC df_trans = df_trans.withColumn("etl_timestamp", F.current_timestamp())
+
+# TODO: Add etl_timestamp column
+df_trans = df_trans.withColumn("etl_timestamp", F.current_timestamp())
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Write stream to Bronze table
-# MAGIC (df_trans.writeStream
-# MAGIC  .option("checkpointLocation", "/tmp/iot_stream_checkpoint")
-# MAGIC  .option("partitionBy", "transaction_date")
-# MAGIC  .trigger(once=True)
-# MAGIC  .table("emanuel_db.bronze.iot_stream")
-# MAGIC )
+
+# TODO: Write stream to Bronze table
+(df_trans.writeStream
+ .option("checkpointLocation", "/tmp/iot_stream_checkpoint")
+ .option("partitionBy", "transaction_date")
+ .trigger(once=True)
+ .table("emanuel_db.bronze.iot_stream")
+)
 
 # COMMAND ----------
 
@@ -138,17 +138,17 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Read customers as batch
-# MAGIC df_cus = spark.read.json(f"{landing_url}/customers/")
-# MAGIC df_cus.limit(10).display()
+
+# TODO: Read customers as batch
+df_cus = spark.read.json(f"{landing_url}/customers/")
+df_cus.limit(10).display()
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Add timestamp and write to table
-# MAGIC df_cus = df_cus.withColumn("etl_timestamp", F.current_timestamp())
-# MAGIC df_cus.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.customers")
+
+# TODO: Add timestamp and write to table
+df_cus = df_cus.withColumn("etl_timestamp", F.current_timestamp())
+df_cus.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.customers")
 
 # COMMAND ----------
 
@@ -164,11 +164,11 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Read products, add timestamp, write to table
-# MAGIC df_prod = spark.read.json(f"{landing_url}/products/")
-# MAGIC df_prod = df_prod.withColumn("etl_timestamp", F.current_timestamp())
-# MAGIC df_prod.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.products")
+
+# TODO: Read products, add timestamp, write to table
+df_prod = spark.read.json(f"{landing_url}/products/")
+df_prod = df_prod.withColumn("etl_timestamp", F.current_timestamp())
+df_prod.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.products")
 
 # COMMAND ----------
 
@@ -184,11 +184,11 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Read stores, add timestamp, write to table
-# MAGIC df_stores = spark.read.json(f"{landing_url}/stores/")
-# MAGIC df_stores = df_stores.withColumn("etl_timestamp", F.current_timestamp())
-# MAGIC df_stores.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.stores")
+
+# TODO: Read stores, add timestamp, write to table
+df_stores = spark.read.json(f"{landing_url}/stores/")
+df_stores = df_stores.withColumn("etl_timestamp", F.current_timestamp())
+df_stores.write.mode("overwrite").option("overwriteSchema", "true").saveAsTable("emanuel_db.bronze.stores")
 
 # COMMAND ----------
 

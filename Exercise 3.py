@@ -223,32 +223,32 @@
 
 # COMMAND ----------
 
-# MAGIC %python
-# MAGIC # TODO: Create fact table with joins
-# MAGIC query = """
-# MAGIC     INSERT OVERWRITE TABLE emanuel_db.gold.iot_data
-# MAGIC     SELECT
-# MAGIC         iot.id,
-# MAGIC         iot.customer_id,
-# MAGIC         iot.product_id,
-# MAGIC         iot.receipt_id,
-# MAGIC         iot.store_id,
-# MAGIC         iot.transaction_amount,
-# MAGIC         iot.transaction_date,
-# MAGIC         iot.etl_timestamp,
-# MAGIC         c.customer_name,
-# MAGIC         p.product_name,
-# MAGIC         s.store_name
-# MAGIC     FROM
-# MAGIC         emanuel_db.silver.iot_stream AS iot
-# MAGIC     JOIN
-# MAGIC         emanuel_db.silver.customers AS c ON iot.customer_id = c.id
-# MAGIC     JOIN
-# MAGIC         emanuel_db.silver.products AS p ON iot.product_id = p.id
-# MAGIC     JOIN
-# MAGIC         emanuel_db.silver.stores AS s ON iot.store_id = s.id
-# MAGIC """
-# MAGIC spark.sql(query)
+
+# TODO: Create fact table with joins
+query = """
+    INSERT OVERWRITE TABLE emanuel_db.gold.iot_data
+    SELECT
+        iot.id,
+        iot.customer_id,
+        iot.product_id,
+        iot.receipt_id,
+        iot.store_id,
+        iot.transaction_amount,
+        iot.transaction_date,
+        iot.etl_timestamp,
+        c.customer_name,
+        p.product_name,
+        s.store_name
+    FROM
+        emanuel_db.silver.iot_stream AS iot
+    JOIN
+        emanuel_db.silver.customers AS c ON iot.customer_id = c.id
+    JOIN
+        emanuel_db.silver.products AS p ON iot.product_id = p.id
+    JOIN
+        emanuel_db.silver.stores AS s ON iot.store_id = s.id
+"""
+spark.sql(query)
 
 # COMMAND ----------
 
